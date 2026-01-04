@@ -108,7 +108,7 @@ def shutdown_otel_tracing() -> None:
 
 def instrument_fastapi(app):
     """Instrument FastAPI app with OpenTelemetry"""
-    FastAPIInstrumentor.instrument_app(app)
+    FastAPIInstrumentor.instrument_app(app, excluded_urls="/health")
 
 
 def instrument_sqlalchemy(engine: AsyncEngine) -> None:

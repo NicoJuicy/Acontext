@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from typing import Optional, List
 from fastapi import FastAPI, Query, Path, Body
@@ -39,6 +40,27 @@ from acontext_core.service.data import session as SD
 from acontext_core.service.session_message import flush_session_message_blocking
 from acontext_core.schema.orm import Task
 from sqlalchemy import select, func, cast, Integer
+
+
+# Filter to exclude /health endpoint from uvicorn access logs
+# Uses record.args directly instead of parsing formatted message for efficiency
+class _HealthCheckFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        """True if the record should be logged, False otherwise."""
+        if not record.args:
+            return True
+        if len(record.args) != 5:
+            return True
+        endpoint: str = record.args[2]
+        status_code: int = record.args[4]
+        if not endpoint.startswith("/health"):
+            return True
+        if status_code != 200:
+            return True
+        return False
+
+
+logging.getLogger("uvicorn.access").addFilter(_HealthCheckFilter())
 
 # Setup OpenTelemetry tracing before app creation
 # This ensures tracer provider is set up before instrumentation
