@@ -18,8 +18,9 @@
             "icon": "rocket",
             "pages": [
               "index",
-              "local",
-              "quick"
+              "quick",
+              "llm_quick",
+              "local"
             ]
           },
           {

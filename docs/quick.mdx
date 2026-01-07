@@ -3,6 +3,21 @@ title: Quickstart
 description: "Install Acontext SDK and run a demo script"
 ---
 
+## Start Acontext Server
+
+### Use Hosted Acontext
+Go to [Acontext Dashboard](https://dash.acontext.io) and sign up for a free account. 
+The onboarding process will guide you to get an API key.
+
+### Use Self-hosted Acontext
+Refer to [this doc](/local) to start acontext server in 2 commands.
+It will launch Acontext API and Dashboard on your local machine:
+- Acontext API Base URL: http://localhost:8029/api/v1
+- Acontext Dashboard: http://localhost:3000/
+
+The default API key is `sk-ac-your-root-api-bearer-token`.
+
+
 ## Install SDK
 
 Acontext provides official SDKs for Python and TypeScript/JavaScript, making it easy to integrate Acontext into your applications. The SDKs handle authentication, request formatting, and provide type-safe interfaces to all Acontext features.
@@ -20,19 +35,6 @@ Acontext provides official SDKs for Python and TypeScript/JavaScript, making it 
 ```bash
 pip install acontext
 ```
-
-### Install via uv (recommended)
-
-If you're using [uv](https://docs.astral.sh/uv/) for faster Python package management:
-
-```bash
-uv add acontext
-```
-
-<Check>
-The Python SDK automatically includes dependencies for OpenAI and Anthropic message formats.
-</Check>
-
 </Tab>
 
 <Tab title="TypeScript/JavaScript">
@@ -42,28 +44,23 @@ The Python SDK automatically includes dependencies for OpenAI and Anthropic mess
 - Node.js 16.x or newer
 - npm, yarn, or pnpm package manager
 
-### Install via npm
-
+<Tabs>
+<Tab title="npm">
 ```bash
 npm install @acontext/acontext
 ```
-
-### Install via yarn
-
+</Tab>
+<Tab title="yarn">
 ```bash
 yarn add @acontext/acontext
 ```
-
-### Install via pnpm
-
+</Tab>
+<Tab title="pnpm">
 ```bash
 pnpm add @acontext/acontext
 ```
-
-<Note>
-For Node.js environments, the SDK may require optional peer dependencies `node-fetch` and `form-data` for file uploads and network requests in older Node versions.
-</Note>
-
+</Tab>
+</Tabs>
 </Tab>
 </Tabs>
 
@@ -81,6 +78,12 @@ from acontext import AcontextClient
 client = AcontextClient(
     api_key=os.getenv("ACONTEXT_API_KEY"),
 )
+
+# If you're using self-hosted Acontext:
+# client = AcontextClient(
+#     base_url="http://localhost:8029/api/v1",
+#     api_key="sk-ac-your-root-api-bearer-token",
+# )
 
 print(client.ping())
 
@@ -120,6 +123,12 @@ import { AcontextClient } from "@acontext/acontext";
 const client = new AcontextClient({
     apiKey: process.env.ACONTEXT_API_KEY,
 });
+
+// If you're using self-hosted Acontext:
+// const client = new AcontextClient({
+//     baseUrl: "http://localhost:8029/api/v1",
+//     apiKey: "sk-ac-your-root-api-bearer-token",
+// });
 
 async function main() {
     console.log(await client.ping());
