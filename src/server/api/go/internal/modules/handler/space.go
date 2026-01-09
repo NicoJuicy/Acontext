@@ -87,7 +87,7 @@ func (h *SpaceHandler) GetSpaces(c *gin.Context) {
 //	@Security		BearerAuth
 //	@Success		201	{object}	serializer.Response{data=model.Space}
 //	@Router			/space [post]
-//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Create a space\nspace = client.spaces.create(configs={\"name\": \"My Space\"})\nprint(f\"Created space: {space.id}\")\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Create a space\nconst space = await client.spaces.create({ configs: { name: 'My Space' } });\nconsole.log(`Created space: ${space.id}`);\n","label":"JavaScript"}]
+//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Create a space\nspace = client.spaces.create()\nprint(f\"Created space: {space.id}\")\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Create a space\nconst space = await client.spaces.create();\nconsole.log(`Created space: ${space.id}`);\n","label":"JavaScript"}]
 func (h *SpaceHandler) CreateSpace(c *gin.Context) {
 	req := CreateSpaceReq{}
 	if err := c.ShouldBind(&req); err != nil {
@@ -162,7 +162,7 @@ type UpdateSpaceConfigsReq struct {
 //	@Security		BearerAuth
 //	@Success		200	{object}	serializer.Response
 //	@Router			/space/{space_id}/configs [put]
-//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Update space configs\nclient.spaces.update_configs(\n    space_id='space-uuid',\n    configs={\"name\": \"Updated Name\", \"description\": \"New description\"}\n)\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Update space configs\nawait client.spaces.updateConfigs('space-uuid', {\n  configs: { name: 'Updated Name', description: 'New description' }\n});\n","label":"JavaScript"}]
+//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Update space configs\nclient.spaces.update_configs(\n    space_id='space-uuid'\n)\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Update space configs\nawait client.spaces.updateConfigs('space-uuid');\n","label":"JavaScript"}]
 func (h *SpaceHandler) UpdateConfigs(c *gin.Context) {
 	req := UpdateSpaceConfigsReq{}
 	if err := c.ShouldBind(&req); err != nil {

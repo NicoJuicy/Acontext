@@ -1427,8 +1427,7 @@ paths:
 
           # Create a session
           session = client.sessions.create(
-              space_id='space-uuid',
-              configs={"mode": "chat"}
+              space_id='space-uuid'
           )
           print(f"Created session: {session.id}")
       - label: JavaScript
@@ -1440,8 +1439,7 @@ paths:
 
           // Create a session
           const session = await client.sessions.create({
-            spaceId: 'space-uuid',
-            configs: { mode: 'chat' }
+            spaceId: 'space-uuid'
           });
           console.log(`Created session: ${session.id}`);
   /session/{session_id}:
@@ -1576,8 +1574,7 @@ paths:
 
           # Update session configs
           client.sessions.update_configs(
-              session_id='session-uuid',
-              configs={"mode": "updated-mode"}
+              session_id='session-uuid'
           )
       - label: JavaScript
         lang: javascript
@@ -1587,9 +1584,7 @@ paths:
           const client = new AcontextClient({ apiKey: 'sk_project_token' });
 
           // Update session configs
-          await client.sessions.updateConfigs('session-uuid', {
-            configs: { mode: 'updated-mode' }
-          });
+          await client.sessions.updateConfigs('session-uuid');
   /session/{session_id}/connect_to_space:
     post:
       consumes:
@@ -2240,7 +2235,7 @@ paths:
           client = AcontextClient(api_key='sk_project_token')
 
           # Create a space
-          space = client.spaces.create(configs={"name": "My Space"})
+          space = client.spaces.create()
           print(f"Created space: {space.id}")
       - label: JavaScript
         lang: javascript
@@ -2250,7 +2245,7 @@ paths:
           const client = new AcontextClient({ apiKey: 'sk_project_token' });
 
           // Create a space
-          const space = await client.spaces.create({ configs: { name: 'My Space' } });
+          const space = await client.spaces.create();
           console.log(`Created space: ${space.id}`);
   /space/{space_id}:
     delete:
@@ -2839,8 +2834,7 @@ paths:
 
           # Update space configs
           client.spaces.update_configs(
-              space_id='space-uuid',
-              configs={"name": "Updated Name", "description": "New description"}
+              space_id='space-uuid'
           )
       - label: JavaScript
         lang: javascript
@@ -2850,9 +2844,7 @@ paths:
           const client = new AcontextClient({ apiKey: 'sk_project_token' });
 
           // Update space configs
-          await client.spaces.updateConfigs('space-uuid', {
-            configs: { name: 'Updated Name', description: 'New description' }
-          });
+          await client.spaces.updateConfigs('space-uuid');
   /space/{space_id}/experience_confirmations:
     get:
       consumes:

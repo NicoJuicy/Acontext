@@ -115,7 +115,7 @@ func (h *SessionHandler) GetSessions(c *gin.Context) {
 //	@Security		BearerAuth
 //	@Success		201	{object}	serializer.Response{data=model.Session}
 //	@Router			/session [post]
-//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Create a session\nsession = client.sessions.create(\n    space_id='space-uuid',\n    configs={\"mode\": \"chat\"}\n)\nprint(f\"Created session: {session.id}\")\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Create a session\nconst session = await client.sessions.create({\n  spaceId: 'space-uuid',\n  configs: { mode: 'chat' }\n});\nconsole.log(`Created session: ${session.id}`);\n","label":"JavaScript"}]
+//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Create a session\nsession = client.sessions.create(\n    space_id='space-uuid'\n)\nprint(f\"Created session: {session.id}\")\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Create a session\nconst session = await client.sessions.create({\n  spaceId: 'space-uuid'\n});\nconsole.log(`Created session: ${session.id}`);\n","label":"JavaScript"}]
 func (h *SessionHandler) CreateSession(c *gin.Context) {
 	req := CreateSessionReq{}
 	if err := c.ShouldBind(&req); err != nil {
@@ -202,7 +202,7 @@ type UpdateSessionConfigsReq struct {
 //	@Security		BearerAuth
 //	@Success		200	{object}	serializer.Response{}
 //	@Router			/session/{session_id}/configs [put]
-//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Update session configs\nclient.sessions.update_configs(\n    session_id='session-uuid',\n    configs={\"mode\": \"updated-mode\"}\n)\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Update session configs\nawait client.sessions.updateConfigs('session-uuid', {\n  configs: { mode: 'updated-mode' }\n});\n","label":"JavaScript"}]
+//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Update session configs\nclient.sessions.update_configs(\n    session_id='session-uuid'\n)\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Update session configs\nawait client.sessions.updateConfigs('session-uuid');\n","label":"JavaScript"}]
 func (h *SessionHandler) UpdateConfigs(c *gin.Context) {
 	req := UpdateSessionConfigsReq{}
 	if err := c.ShouldBind(&req); err != nil {

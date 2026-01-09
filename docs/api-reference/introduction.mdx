@@ -65,7 +65,7 @@ client = AcontextClient(
 # )
 
 # Create a knowledge space
-space = client.spaces.create(configs={"name": "Customer Support KB"})
+space = client.spaces.create()
 
 # Create a session connected to the space
 session = client.sessions.create(space_id=space.id)
@@ -99,9 +99,7 @@ const client = new AcontextClient({
 // });
 
 // Create a knowledge space
-const space = await client.spaces.create({ 
-  configs: { name: 'Customer Support KB' } 
-});
+const space = await client.spaces.create();
 
 // Create a session connected to the space
 const session = await client.sessions.create({ spaceId: space.id });
