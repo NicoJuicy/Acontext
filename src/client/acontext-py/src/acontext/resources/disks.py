@@ -2,9 +2,13 @@
 Disk and artifact endpoints.
 """
 
+from __future__ import annotations
+
 import json
 from collections.abc import Mapping
 from typing import Any, BinaryIO, cast
+
+from pydantic import TypeAdapter
 
 from .._utils import build_params
 from ..client_types import RequesterProtocol
@@ -195,8 +199,85 @@ class DiskArtifactsAPI:
         *,
         path: str | None = None,
     ) -> ListArtifactsResp:
+        """List artifacts in a disk at a specific path.
+        
+        Args:
+            disk_id: The UUID of the disk.
+            path: Directory path to list. Defaults to None (root).
+            
+        Returns:
+            ListArtifactsResp containing the list of artifacts.
+        """
         params: dict[str, Any] = {}
         if path is not None:
             params["path"] = path
         data = self._requester.request("GET", f"/disk/{disk_id}/artifact/ls", params=params or None)
         return ListArtifactsResp.model_validate(data)
+
+    def grep_artifacts(
+        self,
+        disk_id: str,
+        *,
+        query: str,
+        limit: int = 100,
+    ) -> list[Artifact]:
+        """Search artifact content using regex pattern.
+        
+        Args:
+            disk_id: The disk ID to search in
+            query: Regex pattern to search for in file content
+            limit: Maximum number of results (default 100, max 1000)
+            
+        Returns:
+            List of matching artifacts
+            
+        Example:
+        ```python
+            # Search for TODO comments in code
+            results = client.disks.artifacts.grep_artifacts(
+                disk_id="disk-uuid",
+                query="TODO.*bug"
+            )
+        ```
+        """
+        params = build_params(query=query, limit=limit)
+        data = self._requester.request(
+            "GET",
+            f"/disk/{disk_id}/artifact/grep",
+            params=params
+        )
+        return TypeAdapter(list[Artifact]).validate_python(data)
+
+    def glob_artifacts(
+        self,
+        disk_id: str,
+        *,
+        query: str,
+        limit: int = 100,
+    ) -> list[Artifact]:
+        """Search artifact paths using glob pattern.
+        
+        Args:
+            disk_id: The disk ID to search in
+            query: Glob pattern (e.g., '**/*.py', '*.txt')
+            limit: Maximum number of results (default 100, max 1000)
+            
+        Returns:
+            List of matching artifacts
+            
+        Example:
+        ```python
+            # Find all Python files
+            results = client.disks.artifacts.glob_artifacts(
+                disk_id="disk-uuid",
+                query="**/*.py"
+            )
+        ```
+        """
+        params = build_params(query=query, limit=limit)
+        data = self._requester.request(
+            "GET",
+            f"/disk/{disk_id}/artifact/glob",
+            params=params
+        )
+        return TypeAdapter(list[Artifact]).validate_python(data)

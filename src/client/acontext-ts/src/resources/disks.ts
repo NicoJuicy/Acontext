@@ -8,6 +8,8 @@ import { buildParams } from '../utils';
 import {
   Artifact,
   ArtifactSchema,
+  Artifacts,
+  ArtifactsSchema,
   Disk,
   DiskSchema,
   GetArtifactResp,
@@ -66,15 +68,15 @@ export class DisksAPI {
 }
 
 export class DiskArtifactsAPI {
-  constructor(private requester: RequesterProtocol) {}
+  constructor(private requester: RequesterProtocol) { }
 
   async upsert(
     diskId: string,
     options: {
       file:
-        | FileUpload
-        | [string, Buffer | NodeJS.ReadableStream]
-        | [string, Buffer | NodeJS.ReadableStream, string | null];
+      | FileUpload
+      | [string, Buffer | NodeJS.ReadableStream]
+      | [string, Buffer | NodeJS.ReadableStream, string | null];
       filePath?: string | null;
       meta?: Record<string, unknown> | null;
     }
@@ -168,5 +170,38 @@ export class DiskArtifactsAPI {
     });
     return ListArtifactsRespSchema.parse(data);
   }
-}
 
+  async grepArtifacts(
+    diskId: string,
+    options: {
+      query: string;
+      limit?: number;
+    }
+  ): Promise<Artifacts> {
+    const params = buildParams({
+      query: options.query,
+      limit: options.limit ?? 100,
+    });
+    const data = await this.requester.request('GET', `/disk/${diskId}/artifact/grep`, {
+      params,
+    });
+    return ArtifactsSchema.parse(data);
+  }
+
+  async globArtifacts(
+    diskId: string,
+    options: {
+      query: string;
+      limit?: number;
+    }
+  ): Promise<Artifacts> {
+    const params = buildParams({
+      query: options.query,
+      limit: options.limit ?? 100,
+    });
+    const data = await this.requester.request('GET', `/disk/${diskId}/artifact/glob`, {
+      params,
+    });
+    return ArtifactsSchema.parse(data);
+  }
+}
