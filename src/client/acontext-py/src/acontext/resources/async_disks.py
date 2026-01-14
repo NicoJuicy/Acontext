@@ -33,26 +33,28 @@ class AsyncDisksAPI:
         time_desc: bool | None = None,
     ) -> ListDisksOutput:
         """List all disks in the project.
-        
+
         Args:
             user: Filter by user identifier. Defaults to None.
             limit: Maximum number of disks to return. Defaults to None.
             cursor: Cursor for pagination. Defaults to None.
             time_desc: Order by created_at descending if True, ascending if False. Defaults to None.
-            
+
         Returns:
             ListDisksOutput containing the list of disks and pagination information.
         """
-        params = build_params(user=user, limit=limit, cursor=cursor, time_desc=time_desc)
+        params = build_params(
+            user=user, limit=limit, cursor=cursor, time_desc=time_desc
+        )
         data = await self._requester.request("GET", "/disk", params=params or None)
         return ListDisksOutput.model_validate(data)
 
     async def create(self, *, user: str | None = None) -> Disk:
         """Create a new disk.
-        
+
         Args:
             user: Optional user identifier string. Defaults to None.
-            
+
         Returns:
             The created Disk object.
         """
@@ -64,7 +66,7 @@ class AsyncDisksAPI:
 
     async def delete(self, disk_id: str) -> None:
         """Delete a disk by its ID.
-        
+
         Args:
             disk_id: The UUID of the disk to delete.
         """
@@ -79,20 +81,22 @@ class AsyncDiskArtifactsAPI:
         self,
         disk_id: str,
         *,
-        file: FileUpload
-        | tuple[str, BinaryIO | bytes]
-        | tuple[str, BinaryIO | bytes, str],
+        file: (
+            FileUpload
+            | tuple[str, BinaryIO | bytes]
+            | tuple[str, BinaryIO | bytes, str]
+        ),
         file_path: str | None = None,
         meta: Mapping[str, Any] | None = None,
     ) -> Artifact:
         """Upload a file to create or update an artifact.
-        
+
         Args:
             disk_id: The UUID of the disk.
             file: The file to upload (FileUpload object or tuple format).
             file_path: Directory path (not including filename), defaults to "/".
             meta: Custom metadata as JSON-serializable dict, defaults to None.
-            
+
         Returns:
             Artifact containing the created/updated artifact information.
         """
@@ -122,7 +126,7 @@ class AsyncDiskArtifactsAPI:
         expire: int | None = None,
     ) -> GetArtifactResp:
         """Get an artifact by disk ID, file path, and filename.
-        
+
         Args:
             disk_id: The UUID of the disk.
             file_path: Directory path (not including filename).
@@ -130,7 +134,7 @@ class AsyncDiskArtifactsAPI:
             with_public_url: Whether to include a presigned public URL. Defaults to None.
             with_content: Whether to include file content. Defaults to None.
             expire: URL expiration time in seconds. Defaults to None.
-            
+
         Returns:
             GetArtifactResp containing the artifact and optionally public URL and content.
         """
@@ -141,7 +145,9 @@ class AsyncDiskArtifactsAPI:
             with_content=with_content,
             expire=expire,
         )
-        data = await self._requester.request("GET", f"/disk/{disk_id}/artifact", params=params)
+        data = await self._requester.request(
+            "GET", f"/disk/{disk_id}/artifact", params=params
+        )
         return GetArtifactResp.model_validate(data)
 
     async def update(
@@ -153,13 +159,13 @@ class AsyncDiskArtifactsAPI:
         meta: Mapping[str, Any],
     ) -> UpdateArtifactResp:
         """Update an artifact's metadata.
-        
+
         Args:
             disk_id: The UUID of the disk.
             file_path: Directory path (not including filename).
             filename: The filename of the artifact.
             meta: Custom metadata as JSON-serializable dict.
-            
+
         Returns:
             UpdateArtifactResp containing the updated artifact information.
         """
@@ -168,7 +174,9 @@ class AsyncDiskArtifactsAPI:
             "file_path": full_path,
             "meta": json.dumps(cast(Mapping[str, Any], meta)),
         }
-        data = await self._requester.request("PUT", f"/disk/{disk_id}/artifact", json_data=payload)
+        data = await self._requester.request(
+            "PUT", f"/disk/{disk_id}/artifact", json_data=payload
+        )
         return UpdateArtifactResp.model_validate(data)
 
     async def delete(
@@ -179,7 +187,7 @@ class AsyncDiskArtifactsAPI:
         filename: str,
     ) -> None:
         """Delete an artifact by disk ID, file path, and filename.
-        
+
         Args:
             disk_id: The UUID of the disk.
             file_path: Directory path (not including filename).
@@ -187,7 +195,9 @@ class AsyncDiskArtifactsAPI:
         """
         full_path = f"{file_path.rstrip('/')}/{filename}"
         params = {"file_path": full_path}
-        await self._requester.request("DELETE", f"/disk/{disk_id}/artifact", params=params)
+        await self._requester.request(
+            "DELETE", f"/disk/{disk_id}/artifact", params=params
+        )
 
     async def list(
         self,
@@ -195,9 +205,83 @@ class AsyncDiskArtifactsAPI:
         *,
         path: str | None = None,
     ) -> ListArtifactsResp:
+        """List artifacts in a disk at a specific path.
+
+        Args:
+            disk_id: The UUID of the disk.
+            path: Directory path to list. Defaults to None (root).
+
+        Returns:
+            ListArtifactsResp containing the list of artifacts.
+        """
         params: dict[str, Any] = {}
         if path is not None:
             params["path"] = path
-        data = await self._requester.request("GET", f"/disk/{disk_id}/artifact/ls", params=params or None)
+        data = await self._requester.request(
+            "GET", f"/disk/{disk_id}/artifact/ls", params=params or None
+        )
         return ListArtifactsResp.model_validate(data)
 
+    async def grep_artifacts(
+        self,
+        disk_id: str,
+        *,
+        query: str,
+        limit: int = 100,
+    ) -> list[Artifact]:
+        """Search artifact content using regex pattern.
+
+        Args:
+            disk_id: The disk ID to search in
+            query: Regex pattern to search for in file content
+            limit: Maximum number of results (default 100, max 1000)
+
+        Returns:
+            List of matching artifacts
+
+        Example:
+        ```python
+            # Search for TODO comments in code
+            results = await client.disks.artifacts.grep_artifacts(
+                disk_id="disk-uuid",
+                query="TODO.*bug"
+            )
+        ```
+        """
+        params = build_params(query=query, limit=limit)
+        data = await self._requester.request(
+            "GET", f"/disk/{disk_id}/artifact/grep", params=params
+        )
+        return [Artifact.model_validate(item) for item in data]
+
+    async def glob_artifacts(
+        self,
+        disk_id: str,
+        *,
+        query: str,
+        limit: int = 100,
+    ) -> list[Artifact]:
+        """Search artifact paths using glob pattern.
+
+        Args:
+            disk_id: The disk ID to search in
+            query: Glob pattern (e.g., '**/*.py', '*.txt')
+            limit: Maximum number of results (default 100, max 1000)
+
+        Returns:
+            List of matching artifacts
+
+        Example:
+        ```python
+            # Find all Python files
+            results = await client.disks.artifacts.glob_artifacts(
+                disk_id="disk-uuid",
+                query="**/*.py"
+            )
+        ```
+        """
+        params = build_params(query=query, limit=limit)
+        data = await self._requester.request(
+            "GET", f"/disk/{disk_id}/artifact/glob", params=params
+        )
+        return [Artifact.model_validate(item) for item in data]

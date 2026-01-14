@@ -54,7 +54,7 @@ export class SkillsAPI {
    * @returns ListSkillsOutput containing skills with name and description for the current page,
    *          along with pagination information (next_cursor and has_more)
    */
-  async list_catalog(options?: {
+  async listCatalog(options?: {
     user?: string | null;
     limit?: number | null;
     cursor?: string | null;

@@ -177,7 +177,7 @@ if catalog.has_more:
 
 ```typescript TypeScript
 // List skills in the catalog
-const catalog = await client.skills.list_catalog({ limit: 20 });
+const catalog = await client.skills.listCatalog({ limit: 20 });
 
 console.log('Available skills:');
 catalog.items.forEach(item => {
@@ -444,7 +444,7 @@ async function main() {
         console.log(`✓ Created skill: ${skill.name} (${skill.id})`);
         
         // List skill catalog
-        const catalog = await client.skills.list_catalog();
+        const catalog = await client.skills.listCatalog();
         console.log(`✓ Found ${catalog.items.length} skill(s) in catalog`);
         
         // Get skill details
@@ -496,7 +496,7 @@ if result.has_more:
 
 ```typescript TypeScript
 // List skills with pagination
-const result = await client.skills.list_catalog({
+const result = await client.skills.listCatalog({
     limit: 10,
     timeDesc: true
 });
@@ -507,7 +507,7 @@ result.items.forEach(skill => {
 
 // Get next page if available
 if (result.has_more) {
-    const nextResult = await client.skills.list_catalog({
+    const nextResult = await client.skills.listCatalog({
         limit: 10,
         cursor: result.next_cursor,
         timeDesc: true
@@ -531,7 +531,7 @@ for skill in user_skills.items:
 
 ```typescript TypeScript
 // List skills for a specific user
-const userSkills = await client.skills.list_catalog({
+const userSkills = await client.skills.listCatalog({
     user: 'alice@example.com'
 });
 

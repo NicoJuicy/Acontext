@@ -78,6 +78,7 @@ class AsyncSessionsAPI:
         *,
         user: str | None = None,
         space_id: str | None = None,
+        disable_task_tracking: bool | None = None,
         configs: Mapping[str, Any] | None = None,
     ) -> Session:
         """Create a new session.
@@ -85,6 +86,7 @@ class AsyncSessionsAPI:
         Args:
             user: Optional user identifier string. Defaults to None.
             space_id: Optional space ID to associate with the session. Defaults to None.
+            disable_task_tracking: Whether to disable task tracking for this session. Defaults to None (server default: False).
             configs: Optional session configuration dictionary. Defaults to None.
 
         Returns:
@@ -95,6 +97,8 @@ class AsyncSessionsAPI:
             payload["user"] = user
         if space_id:
             payload["space_id"] = space_id
+        if disable_task_tracking is not None:
+            payload["disable_task_tracking"] = disable_task_tracking
         if configs is not None:
             payload["configs"] = configs
         data = await self._requester.request("POST", "/session", json_data=payload)
@@ -367,21 +371,22 @@ class AsyncSessionsAPI:
         )
         return TokenCounts.model_validate(data)
 
+    async def messages_observing_status(
+        self, session_id: str
+    ) -> MessageObservingStatus:
+        """Get message observing status counts for a session.
 
-async def messages_observing_status(self, session_id: str) -> MessageObservingStatus:
-    """Get message observing status counts for a session.
+        Returns the count of messages by their observing status:
+        observed, in_process, and pending.
 
-    Returns the count of messages by their observing status:
-    observed, in_process, and pending.
+        Args:
+            session_id: The UUID of the session.
 
-    Args:
-        session_id: The UUID of the session.
-
-    Returns:
-        MessageObservingStatus object containing observed, in_process,
-        pending counts and updated_at timestamp.
-    """
-    data = await self._requester.request(
-        "GET", f"/session/{session_id}/observing_status"
-    )
-    return MessageObservingStatus.model_validate(data)
+        Returns:
+            MessageObservingStatus object containing observed, in_process,
+            pending counts and updated_at timestamp.
+        """
+        data = await self._requester.request(
+            "GET", f"/session/{session_id}/observing_status"
+        )
+        return MessageObservingStatus.model_validate(data)
