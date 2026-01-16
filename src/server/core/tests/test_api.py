@@ -9,7 +9,7 @@ Test Strategy:
 - Uses httpx.AsyncClient with ASGITransport to test the async ASGI app
 - AsyncClient runs the app in the same event loop, avoiding thread/loop conflicts
 - Each test creates its own local DatabaseClient for isolation
-- The api.DB_CLIENT is patched so the endpoint uses the test's database
+- The routers.session.DB_CLIENT is patched so the endpoint uses the test's database
 - This allows proper async database operations without event loop mismatches
 """
 
@@ -158,7 +158,7 @@ class TestGetLearningStatusEndpoint:
             session_id = test_session.id
 
         # Test the API endpoint
-        with patch("api.DB_CLIENT", db_client):
+        with patch("routers.session.DB_CLIENT", db_client):
             async with AsyncClient(
                 transport=ASGITransport(app=app), base_url="http://test"
             ) as client:
@@ -207,7 +207,7 @@ class TestGetLearningStatusEndpoint:
             session_id = test_session.id
 
         # Test the API endpoint
-        with patch("api.DB_CLIENT", db_client):
+        with patch("routers.session.DB_CLIENT", db_client):
             async with AsyncClient(
                 transport=ASGITransport(app=app), base_url="http://test"
             ) as client:
@@ -271,7 +271,7 @@ class TestGetLearningStatusEndpoint:
             session_id = test_session.id
 
         # Test the API endpoint
-        with patch("api.DB_CLIENT", db_client):
+        with patch("routers.session.DB_CLIENT", db_client):
             async with AsyncClient(
                 transport=ASGITransport(app=app), base_url="http://test"
             ) as client:
@@ -314,7 +314,7 @@ class TestGetLearningStatusEndpoint:
             invalid_session_id = str(uuid4())
 
         # Test the API endpoint
-        with patch("api.DB_CLIENT", db_client):
+        with patch("routers.session.DB_CLIENT", db_client):
             async with AsyncClient(
                 transport=ASGITransport(app=app), base_url="http://test"
             ) as client:
@@ -387,7 +387,7 @@ class TestGetLearningStatusEndpoint:
             session_id = test_session.id
 
         # Test the API endpoint
-        with patch("api.DB_CLIENT", db_client):
+        with patch("routers.session.DB_CLIENT", db_client):
             async with AsyncClient(
                 transport=ASGITransport(app=app), base_url="http://test"
             ) as client:

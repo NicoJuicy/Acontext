@@ -1,5 +1,6 @@
-from sqlalchemy import select
+from sqlalchemy import select, update, type_coerce, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.dialects.postgresql import JSONB
 from ...schema.sandbox import (
     SandboxCreateConfig,
     SandboxUpdateConfig,
@@ -13,23 +14,25 @@ from ...infra.sandbox.client import SANDBOX_CLIENT
 from ...env import LOG
 
 
-async def _get_sandbox_log(
+async def _get_backend_sandbox_id(
     db_session: AsyncSession, sandbox_id: asUUID
-) -> Result[SandboxLog]:
+) -> Result[str]:
     """
-    Get the SandboxLog record by unified sandbox ID.
+    Get the backend sandbox ID by unified sandbox ID.
 
     Args:
         db_session: Database session.
         sandbox_id: The unified sandbox ID (UUID).
 
     Returns:
-        Result containing the SandboxLog record.
+        Result containing the backend sandbox ID string.
     """
-    sandbox_log = await db_session.get(SandboxLog, sandbox_id)
-    if sandbox_log is None:
+    stmt = select(SandboxLog.backend_sandbox_id).where(SandboxLog.id == sandbox_id)
+    result = await db_session.execute(stmt)
+    backend_id = result.scalar_one_or_none()
+    if backend_id is None:
         return Result.reject(f"Sandbox {sandbox_id} not found")
-    return Result.resolve(sandbox_log)
+    return Result.resolve(backend_id)
 
 
 async def create_sandbox(
@@ -65,7 +68,7 @@ async def create_sandbox(
         db_session.add(sandbox_log)
         await db_session.flush()
 
-        LOG.info(
+        LOG.debug(
             f"Created sandbox {sandbox_log.id} -> backend {backend.type}:{info.sandbox_id}"
         )
 
@@ -92,17 +95,15 @@ async def kill_sandbox(db_session: AsyncSession, sandbox_id: asUUID) -> Result[b
     """
     try:
         # Look up the backend sandbox ID
-        log_result = await _get_sandbox_log(db_session, sandbox_id)
-        if not log_result.ok():
-            return Result.reject(log_result.error.errmsg)
+        result = await _get_backend_sandbox_id(db_session, sandbox_id)
+        if not result.ok():
+            return Result.reject(result.error.errmsg)
 
-        sandbox_log = log_result.data
+        backend_sandbox_id = result.data
         backend = SANDBOX_CLIENT.use_backend()
-        success = await backend.kill_sandbox(sandbox_log.backend_sandbox_id)
+        success = await backend.kill_sandbox(backend_sandbox_id)
 
-        LOG.info(
-            f"Killed sandbox {sandbox_id} (backend: {sandbox_log.backend_sandbox_id})"
-        )
+        LOG.info(f"Killed sandbox {sandbox_id} (backend: {backend_sandbox_id})")
         return Result.resolve(success)
     except ValueError as e:
         return Result.reject(f"Sandbox backend not available: {e}")
@@ -126,13 +127,13 @@ async def get_sandbox(
     """
     try:
         # Look up the backend sandbox ID
-        log_result = await _get_sandbox_log(db_session, sandbox_id)
-        if not log_result.ok():
-            return Result.reject(log_result.error.errmsg)
+        result = await _get_backend_sandbox_id(db_session, sandbox_id)
+        if not result.ok():
+            return Result.reject(result.error.errmsg)
 
-        sandbox_log = log_result.data
+        backend_sandbox_id = result.data
         backend = SANDBOX_CLIENT.use_backend()
-        info = await backend.get_sandbox(sandbox_log.backend_sandbox_id)
+        info = await backend.get_sandbox(backend_sandbox_id)
 
         # Replace the backend sandbox ID with the unified ID
         info.sandbox_id = str(sandbox_id)
@@ -162,13 +163,13 @@ async def update_sandbox(
     """
     try:
         # Look up the backend sandbox ID
-        log_result = await _get_sandbox_log(db_session, sandbox_id)
-        if not log_result.ok():
-            return Result.reject(log_result.error.errmsg)
+        result = await _get_backend_sandbox_id(db_session, sandbox_id)
+        if not result.ok():
+            return Result.reject(result.error.errmsg)
 
-        sandbox_log = log_result.data
+        backend_sandbox_id = result.data
         backend = SANDBOX_CLIENT.use_backend()
-        info = await backend.update_sandbox(sandbox_log.backend_sandbox_id, config)
+        info = await backend.update_sandbox(backend_sandbox_id, config)
 
         # Replace the backend sandbox ID with the unified ID
         info.sandbox_id = str(sandbox_id)
@@ -198,23 +199,28 @@ async def exec_command(
     """
     try:
         # Look up the backend sandbox ID
-        log_result = await _get_sandbox_log(db_session, sandbox_id)
-        if not log_result.ok():
-            return Result.reject(log_result.error.errmsg)
+        result = await _get_backend_sandbox_id(db_session, sandbox_id)
+        if not result.ok():
+            return Result.reject(result.error.errmsg)
 
-        sandbox_log = log_result.data
+        backend_sandbox_id = result.data
         backend = SANDBOX_CLIENT.use_backend()
-        output = await backend.exec_command(sandbox_log.backend_sandbox_id, command)
+        output = await backend.exec_command(backend_sandbox_id, command)
 
-        # Update history_commands in the log
-        sandbox_log.history_commands = [
-            *sandbox_log.history_commands,
-            {
-                "command": command,
-                "exit_code": output.exit_code,
-            },
-        ]
-        await db_session.flush()
+        # Append to history_commands using PostgreSQL JSONB || operator
+        # Use COALESCE to handle NULL values
+        new_entry = [{"command": command, "exit_code": output.exit_code}]
+        stmt = (
+            update(SandboxLog)
+            .where(SandboxLog.id == sandbox_id)
+            .values(
+                history_commands=func.coalesce(
+                    SandboxLog.history_commands, type_coerce([], JSONB)
+                )
+                + type_coerce(new_entry, JSONB)
+            )
+        )
+        await db_session.execute(stmt)
 
         return Result.resolve(output)
     except ValueError as e:
@@ -244,26 +250,33 @@ async def download_file(
     """
     try:
         # Look up the backend sandbox ID
-        log_result = await _get_sandbox_log(db_session, sandbox_id)
-        if not log_result.ok():
-            return Result.reject(log_result.error.errmsg)
+        result = await _get_backend_sandbox_id(db_session, sandbox_id)
+        if not result.ok():
+            return Result.reject(result.error.errmsg)
 
-        sandbox_log = log_result.data
+        backend_sandbox_id = result.data
         backend = SANDBOX_CLIENT.use_backend()
         success = await backend.download_file(
-            sandbox_log.backend_sandbox_id, from_sandbox_file, download_to_s3_path
+            backend_sandbox_id, from_sandbox_file, download_to_s3_path
         )
 
         if success:
-            # Update generated_files in the log
-            sandbox_log.generated_files = [
-                *sandbox_log.generated_files,
-                {
-                    "sandbox_path": from_sandbox_file,
-                    "s3_path": download_to_s3_path,
-                },
+            # Append to generated_files using PostgreSQL JSONB || operator
+            # Use COALESCE to handle NULL values
+            new_entry = [
+                {"sandbox_path": from_sandbox_file, "s3_path": download_to_s3_path}
             ]
-            await db_session.flush()
+            stmt = (
+                update(SandboxLog)
+                .where(SandboxLog.id == sandbox_id)
+                .values(
+                    generated_files=func.coalesce(
+                        SandboxLog.generated_files, type_coerce([], JSONB)
+                    )
+                    + type_coerce(new_entry, JSONB)
+                )
+            )
+            await db_session.execute(stmt)
 
         return Result.resolve(success)
     except ValueError as e:
@@ -293,14 +306,14 @@ async def upload_file(
     """
     try:
         # Look up the backend sandbox ID
-        log_result = await _get_sandbox_log(db_session, sandbox_id)
-        if not log_result.ok():
-            return Result.reject(log_result.error.errmsg)
+        result = await _get_backend_sandbox_id(db_session, sandbox_id)
+        if not result.ok():
+            return Result.reject(result.error.errmsg)
 
-        sandbox_log = log_result.data
+        backend_sandbox_id = result.data
         backend = SANDBOX_CLIENT.use_backend()
         success = await backend.upload_file(
-            sandbox_log.backend_sandbox_id, from_s3_file, upload_to_sandbox_path
+            backend_sandbox_id, from_s3_file, upload_to_sandbox_path
         )
         return Result.resolve(success)
     except ValueError as e:
@@ -314,7 +327,7 @@ async def get_sandbox_log(
     db_session: AsyncSession, sandbox_id: asUUID
 ) -> Result[SandboxLog]:
     """
-    Get the SandboxLog record by unified sandbox ID.
+    Get the full SandboxLog record by unified sandbox ID.
 
     Args:
         db_session: Database session.
@@ -323,7 +336,10 @@ async def get_sandbox_log(
     Returns:
         Result containing the SandboxLog record.
     """
-    return await _get_sandbox_log(db_session, sandbox_id)
+    sandbox_log = await db_session.get(SandboxLog, sandbox_id)
+    if sandbox_log is None:
+        return Result.reject(f"Sandbox {sandbox_id} not found")
+    return Result.resolve(sandbox_log)
 
 
 async def list_project_sandboxes(
