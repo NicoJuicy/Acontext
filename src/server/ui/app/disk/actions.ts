@@ -76,6 +76,7 @@ export async function createDisk(): Promise<ApiResponse<Disk>> {
     const response = await fetch(`${API_SERVER_URL}/api/v1/disk`, {
       method: "POST",
       headers: getAuthHeaders(),
+      body: JSON.stringify({}),
     });
 
     return await handleResponse<Disk>(response);
