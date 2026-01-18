@@ -32,6 +32,8 @@ class AWSAgentCoreSandboxBackend(SandboxBackend):
     def __init__(
         self,
         region: str,
+        access_key: Optional[str] = None,
+        secret_key: Optional[str] = None,
     ):
         """Initialize the AWS AgentCore sandbox backend.
 
@@ -39,10 +41,16 @@ class AWSAgentCoreSandboxBackend(SandboxBackend):
             region: AWS region (e.g., "us-west-2")
         """
         self.__region = region
-        self.__client = boto3.client(
-            "bedrock-agentcore",
-            region_name=region,
-        )
+        client_kwargs: dict = {
+            "region_name": region,
+        }
+        # Only pass credentials to boto3 when explicitly provided; otherwise rely on the
+        # default credential chain (env / shared config / assume-role / etc.).
+        if access_key is not None and secret_key is not None:
+            client_kwargs["aws_access_key_id"] = access_key
+            client_kwargs["aws_secret_access_key"] = secret_key
+
+        self.__client = boto3.client("bedrock-agentcore", **client_kwargs)
 
     @classmethod
     def from_default(cls: Type["AWSAgentCoreSandboxBackend"]) -> "AWSAgentCoreSandboxBackend":
@@ -51,6 +59,8 @@ class AWSAgentCoreSandboxBackend(SandboxBackend):
             raise ValueError("aws_agentcore_region must be configured for AWS AgentCore sandbox")
         return cls(
             region=DEFAULT_CORE_CONFIG.aws_agentcore_region,
+            access_key=DEFAULT_CORE_CONFIG.aws_agentcore_access_key,
+            secret_key=DEFAULT_CORE_CONFIG.aws_agentcore_secret_key,
         )
 
     async def start_sandbox(

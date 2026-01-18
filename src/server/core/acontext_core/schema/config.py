@@ -104,6 +104,10 @@ class CoreConfig(BaseModel):
     cloudflare_worker_url: Optional[str] = None  # Worker URL, default: http://localhost:8787 for local dev
     cloudflare_worker_auth_token: Optional[str] = None  # Optional authentication token for Worker API
     aws_agentcore_region: Optional[str] = None
+    # If explicitly provided, the AgentCore backend will use these static credentials.
+    # If omitted, boto3 will use the default credential chain, see https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#configuring-credentials
+    aws_agentcore_access_key: Optional[str] = None
+    aws_agentcore_secret_key: Optional[str] = None
     sandbox_default_cpu_count: float = 1
     sandbox_default_memory_mb: int = 512
     sandbox_default_disk_gb: int = 10
