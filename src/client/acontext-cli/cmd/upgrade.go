@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/memodb-io/Acontext/acontext-cli/internal/tui"
 	"github.com/memodb-io/Acontext/acontext-cli/internal/version"
 	"github.com/spf13/cobra"
 )
@@ -58,22 +59,55 @@ func GetVersion(cmd *cobra.Command) string {
 }
 
 func runUpgrade(cmd *cobra.Command, args []string) error {
-	fmt.Println("🔍 Checking for updates...")
-
 	currentVersion := GetVersion(cmd)
-	hasUpdate, latestVersion, err := version.IsUpdateAvailable(currentVersion)
+
+	var hasUpdate bool
+	var latestVersion string
+	var checkErr error
+
+	// Use spinner while checking for updates
+	_, err := tui.RunSpinner("Checking for updates", func() (string, error) {
+		hasUpdate, latestVersion, checkErr = version.IsUpdateAvailable(currentVersion)
+		if checkErr != nil {
+			return "", checkErr
+		}
+		if hasUpdate {
+			return fmt.Sprintf("New version available: %s", latestVersion), nil
+		}
+		return fmt.Sprintf("Already on latest version: %s", currentVersion), nil
+	})
+
 	if err != nil {
 		return fmt.Errorf("failed to check for updates: %w", err)
 	}
+	if checkErr != nil {
+		return fmt.Errorf("failed to check for updates: %w", checkErr)
+	}
 
 	if !hasUpdate {
-		fmt.Printf("✅ You are already using the latest version: %s\n", currentVersion)
+		fmt.Printf("\n%s You are already using the latest version: %s\n",
+			tui.SuccessStyle.Render(tui.IconSuccess),
+			tui.SubtitleStyle.Render(currentVersion))
 		return nil
 	}
 
-	fmt.Printf("📦 New version available: %s (current: %s)\n", latestVersion, currentVersion)
 	fmt.Println()
-	fmt.Println("🚀 Starting upgrade...")
+	fmt.Printf("%s New version available: %s %s %s\n",
+		tui.IconPackage,
+		tui.SubtitleStyle.Render(latestVersion),
+		tui.MutedStyle.Render("(current:"),
+		tui.MutedStyle.Render(currentVersion+")"))
+	fmt.Println()
+
+	// Ask for confirmation
+	proceed, err := tui.RunConfirm("Would you like to upgrade now?", true)
+	if err != nil || !proceed {
+		fmt.Printf("\n%s Upgrade cancelled\n", tui.IconSkip)
+		return nil
+	}
+
+	fmt.Println()
+	fmt.Printf("%s Starting upgrade...\n", tui.IconRocket)
 	fmt.Println()
 
 	// Execute the installation script
@@ -83,8 +117,8 @@ func runUpgrade(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println()
-	fmt.Println("✅ Upgrade complete!")
-	fmt.Printf("   Run 'acontext version' to verify the new version\n")
+	fmt.Printf("%s Upgrade complete!\n", tui.IconDone)
+	fmt.Printf("   Run %s to verify the new version\n", tui.MutedStyle.Render("acontext version"))
 
 	return nil
 }

@@ -317,6 +317,29 @@ func TestIsUpdateAvailable(t *testing.T) {
 			wantErr:        true,
 			errContains:    "unexpected status code",
 		},
+		{
+			name:           "update available - currentVersion with cli/ prefix",
+			currentVersion: "cli/v0.1.0",
+			releases: []Release{
+				{TagName: "cli/v0.1.1"},
+				{TagName: "cli/v0.1.0"},
+			},
+			statusCode:     http.StatusOK,
+			wantErr:        false,
+			wantAvailable:  true,
+			expectedLatest: "v0.1.1",
+		},
+		{
+			name:           "no update - currentVersion with cli/ prefix equals latest",
+			currentVersion: "cli/v0.1.1",
+			releases: []Release{
+				{TagName: "cli/v0.1.1"},
+				{TagName: "cli/v0.1.0"},
+			},
+			statusCode:    http.StatusOK,
+			wantErr:       false,
+			wantAvailable: false,
+		},
 	}
 
 	for _, tt := range tests {

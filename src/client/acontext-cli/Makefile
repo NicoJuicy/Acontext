@@ -15,7 +15,7 @@ help: ## Show this help message
 
 build: ## Build the binary
 	@echo "Building $(BINARY_NAME)..."
-	@go build -ldflags "-X main.version=$(VERSION)" -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PACKAGE)
+	@go build -ldflags "-X main.cliVersion=$(VERSION)" -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PACKAGE)
 	@echo "✅ Build complete: $(BUILD_DIR)/$(BINARY_NAME)"
 
 install: build ## Install to /usr/local/bin

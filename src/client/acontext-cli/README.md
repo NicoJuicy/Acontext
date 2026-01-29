@@ -6,9 +6,7 @@ A lightweight command-line tool for quickly creating Acontext projects with temp
 
 - 🚀 **Quick Setup**: Create projects in seconds with interactive templates
 - 🌐 **Multi-Language**: Support for Python and TypeScript
-- 🐳 **Docker Ready**: One-command Docker Compose deployment with health monitoring
 - 🖥️ **Split-Screen TUI**: Run sandbox and Docker services together with real-time logs
-- 🏖️ **Sandbox Management**: Create and manage sandbox projects (Cloudflare, etc.)
 - 📦 **Package Manager Detection**: Auto-detect pnpm, npm, yarn, or bun
 - 🔧 **Auto Git**: Automatic Git repository initialization
 - 🔄 **Auto Update**: Automatic version checking and one-command upgrade
@@ -87,58 +85,6 @@ The `server up` command will:
 
 Press `q` or `Ctrl+C` to stop all services.
 
-### Docker Deployment
-
-```bash
-# Start all services (attached mode - shows logs)
-acontext docker up
-
-# Start all services in background
-acontext docker up -d
-
-# Check status
-acontext docker status
-
-# View logs (all services)
-acontext docker logs
-
-# View logs (specific service)
-acontext docker logs api
-
-# Stop services
-acontext docker down
-
-# Generate/regenerate .env file interactively
-acontext docker env
-```
-
-The `docker up` command will:
-- Check if Docker is installed and running
-- Create a temporary docker-compose.yaml for Acontext services
-- Prompt for `.env` configuration if not present (LLM API key, SDK, etc.)
-- Start all services (PostgreSQL, Redis, RabbitMQ, SeaweedFS, Jaeger, Core, API, UI)
-- Wait for services to be healthy (when using `-d` flag)
-
-### Sandbox Management
-
-```bash
-# Start or create a sandbox project
-acontext sandbox start
-```
-
-The `sandbox start` command will:
-- Scan for existing sandbox projects in `sandbox/` directory
-- List available sandbox types to create (e.g., Cloudflare)
-- Allow you to select an existing project to start or create a new one
-- Automatically detect and use the appropriate package manager (pnpm, npm, yarn, bun)
-- Start the development server automatically
-
-**Example workflow:**
-1. Run `acontext sandbox start`
-2. Select from existing projects (e.g., `cloudflare (Local)`) or create new (`Cloudflare (Create)`)
-3. If creating, choose a package manager
-4. The project will be created in `sandbox/cloudflare` and the dev server will start
-
 ### Version Management
 
 ```bash
@@ -153,15 +99,13 @@ The CLI automatically checks for updates after each command execution. If a new 
 
 ## Environment Configuration
 
-When starting Docker services, the CLI will prompt you to configure:
+When running `acontext server up`, if `.env` file doesn't exist, a default one will be created. You can edit it to configure:
 
-1. **LLM SDK**: Choose between `openai` or `anthropic`
+1. **LLM SDK**: `openai` or `anthropic`
 2. **LLM API Key**: Your API key for the selected SDK
 3. **LLM Base URL**: API endpoint (defaults to official API URLs)
 4. **Acontext API Token**: A string to build your Acontext API key (`sk-ac-<your-token>`)
 5. **Config File Path**: Optional path to a `config.yaml` file
-
-The generated `.env` file contains all necessary configuration for the Acontext services.
 
 ## Development Status
 
@@ -189,12 +133,6 @@ The generated `.env` file contains all necessary configuration for the Acontext 
 |---------|-------------|
 | `acontext create [name]` | Create a new project with templates |
 | `acontext server up` | Start sandbox + Docker in split-screen TUI |
-| `acontext docker up [-d]` | Start Docker services |
-| `acontext docker down` | Stop Docker services |
-| `acontext docker status` | Show service status |
-| `acontext docker logs [service]` | View service logs |
-| `acontext docker env` | Generate .env file |
-| `acontext sandbox start` | Start or create sandbox project |
 | `acontext version` | Show version info |
 | `acontext upgrade` | Upgrade to latest version |
 | `acontext help` | Show help information |

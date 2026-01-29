@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
 	"github.com/memodb-io/Acontext/acontext-cli/internal/config"
 	"github.com/memodb-io/Acontext/acontext-cli/internal/git"
 	"github.com/memodb-io/Acontext/acontext-cli/internal/template"
+	"github.com/memodb-io/Acontext/acontext-cli/internal/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -50,12 +50,9 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		projectName = args[0]
 	} else {
 		defaultName := "my-acontext-app"
-		prompt := &survey.Input{
-			Message: "Project name:",
-			Help:    "Enter a name for your project (e.g., my-acontext-app)",
-			Default: defaultName,
-		}
-		if err := survey.AskOne(prompt, &projectName); err != nil {
+		var err error
+		projectName, err = tui.RunInput("Project name:", "Enter a name for your project", defaultName)
+		if err != nil {
 			return fmt.Errorf("failed to get project name: %w", err)
 		}
 		// If user just pressed Enter, use default value
@@ -79,14 +76,15 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("directory %s already exists", projectName)
 	}
 
-	fmt.Printf("📦 Creating project: %s\n", projectName)
+	fmt.Println()
+	fmt.Printf("%s Creating project: %s\n", tui.IconPackage, tui.TitleStyle.Render(projectName))
 	fmt.Println()
 
 	var templateConfig *template.Config
 
 	// 2. If custom template path is specified, use it directly
 	if templatePath != "" {
-		fmt.Printf("✓ Using custom template: %s\n", templatePath)
+		fmt.Printf("%s Using custom template: %s\n", tui.SuccessStyle.Render(tui.IconSuccess), templatePath)
 		fmt.Println()
 		templateConfig = &template.Config{
 			Repo:        "https://github.com/memodb-io/Acontext-Examples",
@@ -99,7 +97,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("✓ Selected language: %s\n", language)
+		fmt.Printf("%s Selected language: %s\n", tui.SuccessStyle.Render(tui.IconSuccess), tui.SelectedStyle.Render(language))
 		fmt.Println()
 
 		// 4. Load config and select template
@@ -107,7 +105,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("✓ Selected template: %s\n", preset.Name)
+		fmt.Printf("%s Selected template: %s\n", tui.SuccessStyle.Render(tui.IconSuccess), tui.SelectedStyle.Render(preset.Name))
 		fmt.Println()
 
 		// 5. Get template config
@@ -148,54 +146,51 @@ func runCreate(cmd *cobra.Command, args []string) error {
 	vars := map[string]string{
 		"project_name": projectName,
 	}
+
+	fmt.Printf("%s Downloading template...\n", tui.IconDownload)
 	if err := template.DownloadTemplateWithVars(templateConfig, projectDir, vars); err != nil {
 		return fmt.Errorf("failed to download template: %w", err)
 	}
 	fmt.Println()
 
 	// 8. Ask whether to initialize Git
-	initGit := false
-	prompt := &survey.Confirm{
-		Message: "Would you like to initialize a Git repository?",
-		Help:    "This will create a new Git repository and make an initial commit.",
-		Default: true,
-	}
-
-	if err := survey.AskOne(prompt, &initGit); err != nil {
-		return fmt.Errorf("failed to get Git initialization preference: %w", err)
+	initGit, err := tui.RunConfirm("Would you like to initialize a Git repository?", true)
+	if err != nil {
+		// User cancelled, treat as no
+		initGit = false
 	}
 
 	if initGit {
-		fmt.Println("🔧 Initializing Git repository...")
+		fmt.Printf("%s Initializing Git repository...\n", tui.IconGit)
 		if err := git.Init(projectDir); err != nil {
-			fmt.Printf("⚠️  Warning: Failed to initialize Git: %v\n", err)
+			fmt.Printf("%s Warning: Failed to initialize Git: %v\n", tui.WarningStyle.Render(tui.IconWarning), err)
 			fmt.Println("   You can initialize Git manually later with: git init")
 		} else {
-			fmt.Println("✓ Git repository initialized")
+			fmt.Printf("%s Git repository initialized\n", tui.SuccessStyle.Render(tui.IconSuccess))
 		}
 		fmt.Println()
 	} else {
-		fmt.Println("⏭️  Skipping Git initialization")
+		fmt.Printf("%s Skipping Git initialization\n", tui.IconSkip)
 		fmt.Println("   You can initialize Git manually later with: git init")
 		fmt.Println()
 	}
 
 	// 9. Display success message
 	fmt.Println()
-	fmt.Println("✅ Project created successfully!")
+	fmt.Printf("%s Project created successfully!\n", tui.IconDone)
 	fmt.Println()
-	fmt.Printf("📁 Project location: %s\n", projectDir)
+	fmt.Printf("%s Project location: %s\n", tui.IconFolder, tui.SubtitleStyle.Render(projectDir))
 	fmt.Println()
-	fmt.Println("🚀 Next steps:")
+	fmt.Printf("%s Next steps:\n", tui.IconRocket)
 	fmt.Println()
 	fmt.Printf("   1. Navigate to your project:\n")
-	fmt.Printf("      cd %s\n", projectName)
+	fmt.Printf("      %s\n", tui.MutedStyle.Render("cd "+projectName))
 	fmt.Println()
 	fmt.Printf("   2. Read the README to get started:\n")
-	fmt.Printf("      cat README.md\n")
+	fmt.Printf("      %s\n", tui.MutedStyle.Render("cat README.md"))
 	fmt.Println()
 	fmt.Printf("   3. Start Acontext server (optional):\n")
-	fmt.Printf("      acontext server up\n")
+	fmt.Printf("      %s\n", tui.MutedStyle.Render("acontext server up"))
 	fmt.Println()
 
 	return nil
@@ -233,18 +228,21 @@ func promptLanguage() (string, error) {
 		return "", fmt.Errorf("no languages available in templates config")
 	}
 
-	var selected string
-	prompt := &survey.Select{
-		Message: "Choose a programming language:",
-		Options: languages,
-		Help:    "Select the language for your project",
+	// Convert to TUI options
+	options := make([]tui.SelectOption, len(languages))
+	for i, lang := range languages {
+		options[i] = tui.SelectOption{
+			Label: lang,
+			Value: lang,
+		}
 	}
 
-	if err := survey.AskOne(prompt, &selected); err != nil {
+	value, err := tui.RunSelect("Choose a programming language:", options)
+	if err != nil {
 		return "", fmt.Errorf("failed to select language: %w", err)
 	}
 
-	return selected, nil
+	return value, nil
 }
 
 // promptTemplate prompts user to select a template
@@ -255,47 +253,54 @@ func promptTemplate(language string) (string, *config.Preset, error) {
 		return "", nil, fmt.Errorf("failed to check template discovery: %w", err)
 	}
 
-	// Show loading indicator if we need to discover templates
+	var presets []config.Preset
+
+	// Show spinner if we need to discover templates
 	if needsDiscovery {
-		fmt.Print("🔍 Discovering templates from repository...")
-	}
-
-	presets, err := config.GetPresets(language)
-
-	// Clear loading message if it was shown
-	if needsDiscovery {
-		fmt.Print("\r" + strings.Repeat(" ", 50) + "\r")
-	}
-
-	if err != nil {
-		return "", nil, fmt.Errorf("failed to get presets: %w", err)
+		var discoverErr error
+		_, spinnerErr := tui.RunSpinner("Discovering templates from repository", func() (string, error) {
+			presets, discoverErr = config.GetPresets(language)
+			if discoverErr != nil {
+				return "", discoverErr
+			}
+			return fmt.Sprintf("Found %d templates", len(presets)), nil
+		})
+		if spinnerErr != nil {
+			return "", nil, fmt.Errorf("failed during template discovery: %w", spinnerErr)
+		}
+		if discoverErr != nil {
+			return "", nil, fmt.Errorf("failed to get presets: %w", discoverErr)
+		}
+	} else {
+		presets, err = config.GetPresets(language)
+		if err != nil {
+			return "", nil, fmt.Errorf("failed to get presets: %w", err)
+		}
 	}
 
 	if len(presets) == 0 {
 		return "", nil, fmt.Errorf("no presets available for language: %s", language)
 	}
 
-	// Create options list (simplified - just show template names)
-	options := make([]string, len(presets))
+	// Convert to TUI options
+	options := make([]tui.SelectOption, len(presets))
 	optionsMap := make(map[string]*config.Preset)
 
 	for i, preset := range presets {
-		options[i] = preset.Name
+		options[i] = tui.SelectOption{
+			Label:       preset.Name,
+			Value:       preset.Name,
+			Description: preset.Description,
+		}
 		optionsMap[preset.Name] = &presets[i]
 	}
 
-	var selectedOption string
-	prompt := &survey.Select{
-		Message: "Choose a template:",
-		Options: options,
-		Help:    "Select a template that matches your needs",
-	}
-
-	if err := survey.AskOne(prompt, &selectedOption); err != nil {
+	selectedLabel, _, err := tui.RunSelectWithLabel("Choose a template:", options)
+	if err != nil {
 		return "", nil, fmt.Errorf("failed to select template: %w", err)
 	}
 
-	preset, ok := optionsMap[selectedOption]
+	preset, ok := optionsMap[selectedLabel]
 	if !ok {
 		return "", nil, fmt.Errorf("selected preset not found")
 	}

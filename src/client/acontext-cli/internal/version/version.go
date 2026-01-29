@@ -158,8 +158,13 @@ func IsUpdateAvailable(currentVersion string) (bool, string, error) {
 		return false, "", err
 	}
 
+	// Normalize currentVersion by removing "cli/" prefix if present
+	// This is needed because the build sets version as "cli/vX.X.X" (from git tag)
+	// but GetLatestVersion() returns "vX.X.X" (without "cli/" prefix)
+	normalizedCurrent := strings.TrimPrefix(currentVersion, "cli/")
+
 	// Compare versions using semantic versioning
-	if CompareVersions(currentVersion, latestVersion) < 0 {
+	if CompareVersions(normalizedCurrent, latestVersion) < 0 {
 		return true, latestVersion, nil
 	}
 
