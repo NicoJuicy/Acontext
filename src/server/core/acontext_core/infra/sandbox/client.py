@@ -36,6 +36,7 @@ class SandboxClient:
         self.__sanbox_backend = SANDBOX_FACTORIES[
             DEFAULT_CORE_CONFIG.sandbox_type
         ].from_default()
+        self.__enabled = True
         LOG.info("Sandbox is enabled")
 
     async def close(self):

@@ -10,6 +10,12 @@ Acontext is a platform for building AI agents with persistent context, observabi
 - DASHBOARD: `src/server/ui/`
 - Docs: `docs/`
 
+## Plan-driven Development
+- Always plan a markdown at plans/ before you code
+- A plan should at least contain `features`, `overall designs`, `implementation TODOS`, `impact files`, `new deps`, `test cases` sections.
+- Remember to update the related plans after you finish your work.
+- Once you finished a plan, always report to me to make sure you're doing it right. If I approve your code, move the plan .md to ./plans/done to archive it.
+
 ## MODULES
 - API is the main module that handles the API requests and responses to Acontext, SDKs are the client-side modules that interact with the API. 
 - CLI tool is a command-line tool that helps you deploy Acontext locally and download examples
