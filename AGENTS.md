@@ -8,7 +8,8 @@ Acontext is a simple context storage for building cloud-native AI Agents
 - API: `src/server/api/`
 - CORE: `src/server/core/`
 - DASHBOARD: `src/server/ui/`
-- Docs: `docs/`
+- Landing Page: `landingpage`
+- Documentation: `docs/`
 
 ## Plan-driven Development
 - Always plan a markdown at plans/ before you code
