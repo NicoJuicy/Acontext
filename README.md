@@ -23,29 +23,37 @@
 
 
 
-# ❓ What is Acontext
+Acontext is the context data platform built for production AI agents. It's purpose is to become the data foundation of the agent, and improve the agent from a local demo to a production-ready, context-observable product.
+
+
+
+# ❓ Why use Acontext
+
+#### Challenges in Building Agents
+
+- Context data like **llm messages, files, and skills are scattered** across different storages
+- **Long-running agents need context management**, and you have to build it yourself
+- **Tracking states from multi-modal, multi-llm Agents is a nightmare**, how you know your agent is great?
+
+#### How Acontext Solves It
+
+- **One unified storage** for messages, files, skills, and more
+- **Built-in context management** methods — just one argument, zero code
+- **Replay** agent trajectory in Dashboard
+- **Observe** agent with background monitor to estimate success rate
+
 <div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./assets/problems-solutions-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="./assets/problems-solutions.svg">
-    <img alt="Why Acontext - Problems and Solutions" src="./assets/problems-solutions.svg">
-  </picture>
+      <img alt="Acontext - Simple Context Storage for Cloud Agents" src="./assets/acontext-components.png">  
 </div>
-Acontext is a context storage for your agent products:
-
-- it can store messages, artifacts, agent skills and sandboxes...
-- it provides observability over the context data.
-- it supports many out-of-box context engineering methods
-
 
 
 # 💡 Core Features
 
 - **Context Storage**
-  - [Session](https://docs.acontext.io/store/messages/multi-provider): unified message storage for any llm, any modal.
-    - [Context Editing](https://docs.acontext.io/engineering/editing) - manage your context window in one api.
-  - [Disk](https://docs.acontext.io/store/disk): save/download artifacts with file path.
-  - [Agent Skills](https://docs.acontext.io/store/skill) - empower your agents with agent skills.
+  - [Session](https://docs.acontext.io/store/messages/multi-provider): save agent history from any llm, any modal.
+    - [Context Editing](https://docs.acontext.io/engineering/editing) - edit context window in one api.
+  - [Disk](https://docs.acontext.io/store/disk): virtual, persistent filesystem,
+  - [Agent Skills](https://docs.acontext.io/store/skill) - manage skills in server-side.
   - [Sandbox](https://docs.acontext.io/store/sandbox) - run code, analyze data, export artifacts.
 
 
@@ -65,8 +73,9 @@ Acontext is a context storage for your agent products:
 
 
 
+# 🚀 Step-by-step Quickstart
 
-# 🚀 Connect to Acontext
+## Connect to Acontext
 
 1. Go to [Acontext.io](https://acontext.io), claim your free credits.
 2. Go through a one-click onboarding to get your API Key: `sk-ac-xxx`
@@ -111,15 +120,11 @@ Once it's done, you can access the following endpoints:
 
 
 
-
-
-## Step-by-step Quickstart
+### Install SDKs
 
 We're maintaining Python [![pypi](https://img.shields.io/pypi/v/acontext.svg)](https://pypi.org/project/acontext/) and Typescript [![npm](https://img.shields.io/npm/v/@acontext/acontext.svg?logo=npm&logoColor=fff&style=flat&labelColor=2C2C2C&color=28CF8D)](https://www.npmjs.com/package/@acontext/acontext) SDKs. The snippets below are using Python.
 
 > Click the doc link to see TS SDK Quickstart.
-
-## Install SDKs
 
 ```bash
 pip install acontext
