@@ -1845,6 +1845,87 @@
                         "source": "import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Update session configs\nawait client.sessions.updateConfigs('session-uuid');\n"
                     }
                 ]
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update session configs using patch semantics. Only updates keys present in the request. Pass null as value to delete a key. Returns the complete configs after patch.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "session"
+                ],
+                "summary": "Patch session configs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PatchSessionConfigs payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.PatchSessionConfigsReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/serializer.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/handler.PatchSessionConfigsResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/serializer.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Session not found",
+                        "schema": {
+                            "$ref": "#/definitions/serializer.Response"
+                        }
+                    }
+                },
+                "x-code-samples": [
+                    {
+                        "label": "Python",
+                        "lang": "python",
+                        "source": "from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Patch session configs (adds/updates keys, use None to delete)\nupdated_configs = client.sessions.patch_configs(\n    session_id='session-uuid',\n    configs={'agent': 'bot2', 'old_key': None}  # None deletes the key\n)\nprint(updated_configs)  # {'existing_key': 'value', 'agent': 'bot2'}\n"
+                    },
+                    {
+                        "label": "JavaScript",
+                        "lang": "javascript",
+                        "source": "import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Patch session configs (adds/updates keys, use null to delete)\nconst updatedConfigs = await client.sessions.patchConfigs(\n  'session-uuid',\n  { agent: 'bot2', old_key: null }  // null deletes the key\n);\nconsole.log(updatedConfigs);  // { existing_key: 'value', agent: 'bot2' }\n"
+                    }
+                ]
             }
         },
         "/session/{session_id}/flush": {
@@ -2801,6 +2882,27 @@
             "type": "object",
             "properties": {
                 "meta": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
+        "handler.PatchSessionConfigsReq": {
+            "type": "object",
+            "required": [
+                "configs"
+            ],
+            "properties": {
+                "configs": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
+        "handler.PatchSessionConfigsResp": {
+            "type": "object",
+            "properties": {
+                "configs": {
                     "type": "object",
                     "additionalProperties": true
                 }

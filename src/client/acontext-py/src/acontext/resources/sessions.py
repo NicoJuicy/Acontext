@@ -454,3 +454,42 @@ class SessionsAPI:
             json_data=payload,
         )
         return data.get("meta", {})  # type: ignore
+
+    def patch_configs(
+        self,
+        session_id: str,
+        *,
+        configs: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Update session configs using patch semantics.
+
+        Only updates keys present in the configs dict. Existing keys not in the request
+        are preserved. To delete a key, pass None as its value.
+
+        Args:
+            session_id: The UUID of the session.
+            configs: Dictionary of config keys to add, update, or delete.
+                Pass None as a value to delete that key.
+
+        Returns:
+            The complete configs after the patch operation.
+
+        Example:
+            >>> # Add/update keys
+            >>> updated = client.sessions.patch_configs(
+            ...     session_id,
+            ...     configs={"agent": "bot2", "temperature": 0.8}
+            ... )
+            >>> # Delete a key
+            >>> updated = client.sessions.patch_configs(
+            ...     session_id,
+            ...     configs={"old_key": None}  # Deletes "old_key"
+            ... )
+        """
+        payload = {"configs": configs}
+        data = self._requester.request(
+            "PATCH",
+            f"/session/{session_id}/configs",
+            json_data=payload,
+        )
+        return data.get("configs", {})  # type: ignore

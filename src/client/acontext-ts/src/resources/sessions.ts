@@ -398,4 +398,39 @@ export class SessionsAPI {
     });
     return (data as { meta: Record<string, unknown> }).meta ?? {};
   }
+
+  /**
+   * Update session configs using patch semantics.
+   *
+   * Only updates keys present in the configs object. Existing keys not in the request
+   * are preserved. To delete a key, pass null as its value.
+   *
+   * @param sessionId - The UUID of the session.
+   * @param configs - Object of config keys to add, update, or delete. Pass null as a value to delete that key.
+   * @returns The complete configs after the patch operation.
+   *
+   * @example
+   * // Add/update keys
+   * const updated = await client.sessions.patchConfigs(
+   *   sessionId,
+   *   { agent: 'bot2', temperature: 0.8 }
+   * );
+   *
+   * @example
+   * // Delete a key
+   * const updated = await client.sessions.patchConfigs(
+   *   sessionId,
+   *   { old_key: null }  // Deletes "old_key"
+   * );
+   */
+  async patchConfigs(
+    sessionId: string,
+    configs: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
+    const payload = { configs };
+    const data = await this.requester.request('PATCH', `/session/${sessionId}/configs`, {
+      jsonData: payload,
+    });
+    return (data as { configs: Record<string, unknown> }).configs ?? {};
+  }
 }

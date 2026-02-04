@@ -99,6 +99,14 @@ func (m *MockSessionService) PatchMessageMeta(ctx context.Context, projectID uui
 	return args.Get(0).(map[string]interface{}), args.Error(1)
 }
 
+func (m *MockSessionService) PatchConfigs(ctx context.Context, projectID uuid.UUID, sessionID uuid.UUID, patchConfigs map[string]interface{}) (map[string]interface{}, error) {
+	args := m.Called(ctx, projectID, sessionID, patchConfigs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(map[string]interface{}), args.Error(1)
+}
+
 func setupSessionRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	return gin.New()
@@ -3693,4 +3701,130 @@ func TestSessionHandler_GetSessionObservingStatus_ServiceError(t *testing.T) {
 	assert.NotEmpty(t, response["error"])
 	assert.Contains(t, response["error"].(string), "database connection failed")
 	mockService.AssertExpectations(t)
+}
+
+func TestSessionHandler_PatchConfigs_Success(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	projectID := uuid.New()
+	sessionID := uuid.New()
+
+	mockService := new(MockSessionService)
+	handler := NewSessionHandler(mockService, &MockUserService{}, getMockSessionCoreClient())
+
+	// Mock the service to return updated configs
+	mockService.On("PatchConfigs", mock.Anything, projectID, sessionID, mock.MatchedBy(func(patch map[string]interface{}) bool {
+		return patch["new_key"] == "new_value"
+	})).Return(map[string]interface{}{
+		"existing_key": "existing_value",
+		"new_key":      "new_value",
+	}, nil)
+
+	reqBody := `{"configs": {"new_key": "new_value"}}`
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("project", &model.Project{ID: projectID})
+	c.Params = gin.Params{
+		{Key: "session_id", Value: sessionID.String()},
+	}
+	req, _ := http.NewRequest("PATCH", "/session/"+sessionID.String()+"/configs", bytes.NewBufferString(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	c.Request = req
+
+	handler.PatchConfigs(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockService.AssertExpectations(t)
+
+	var response map[string]interface{}
+	err := sonic.Unmarshal(w.Body.Bytes(), &response)
+	require.NoError(t, err)
+
+	data, ok := response["data"].(map[string]interface{})
+	require.True(t, ok, "Should have data field")
+	configs, ok := data["configs"].(map[string]interface{})
+	require.True(t, ok, "Should have configs field")
+	assert.Equal(t, "existing_value", configs["existing_key"])
+	assert.Equal(t, "new_value", configs["new_key"])
+}
+
+func TestSessionHandler_PatchConfigs_InvalidSessionID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	projectID := uuid.New()
+
+	mockService := new(MockSessionService)
+	handler := NewSessionHandler(mockService, &MockUserService{}, getMockSessionCoreClient())
+
+	reqBody := `{"configs": {"key": "value"}}`
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("project", &model.Project{ID: projectID})
+	c.Params = gin.Params{
+		{Key: "session_id", Value: "invalid-uuid"},
+	}
+	req, _ := http.NewRequest("PATCH", "/session/invalid-uuid/configs", bytes.NewBufferString(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	c.Request = req
+
+	handler.PatchConfigs(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	mockService.AssertNotCalled(t, "PatchConfigs")
+}
+
+func TestSessionHandler_PatchConfigs_SessionNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	projectID := uuid.New()
+	sessionID := uuid.New()
+
+	mockService := new(MockSessionService)
+	handler := NewSessionHandler(mockService, &MockUserService{}, getMockSessionCoreClient())
+
+	mockService.On("PatchConfigs", mock.Anything, projectID, sessionID, mock.Anything).
+		Return(nil, errors.New("session not found"))
+
+	reqBody := `{"configs": {"key": "value"}}`
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("project", &model.Project{ID: projectID})
+	c.Params = gin.Params{
+		{Key: "session_id", Value: sessionID.String()},
+	}
+	req, _ := http.NewRequest("PATCH", "/session/"+sessionID.String()+"/configs", bytes.NewBufferString(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	c.Request = req
+
+	handler.PatchConfigs(c)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+	mockService.AssertExpectations(t)
+}
+
+func TestSessionHandler_PatchConfigs_InvalidRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	projectID := uuid.New()
+	sessionID := uuid.New()
+
+	mockService := new(MockSessionService)
+	handler := NewSessionHandler(mockService, &MockUserService{}, getMockSessionCoreClient())
+
+	// Test with missing required configs field
+	reqBody := `{}`
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("project", &model.Project{ID: projectID})
+	c.Params = gin.Params{
+		{Key: "session_id", Value: sessionID.String()},
+	}
+	req, _ := http.NewRequest("PATCH", "/session/"+sessionID.String()+"/configs", bytes.NewBufferString(reqBody))
+	req.Header.Set("Content-Type", "application/json")
+	c.Request = req
+
+	handler.PatchConfigs(c)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	mockService.AssertNotCalled(t, "PatchConfigs")
 }

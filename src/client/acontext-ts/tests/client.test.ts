@@ -522,6 +522,50 @@ describe('AcontextClient Unit Tests', () => {
       expect(result).toEqual({ remaining: 'value' });
       expect(result.deleted_key).toBeUndefined();
     });
+
+    test('should patch configs - add new keys', async () => {
+      const sessionId = 'test-session-id';
+      client.mock().onPatch(`/session/${sessionId}/configs`, (options) => {
+        const data = options?.jsonData as Record<string, unknown>;
+        expect(data?.configs).toEqual({ new_key: 'new_value' });
+        return { configs: { existing: 'value', new_key: 'new_value' } };
+      });
+
+      const result = await client.sessions.patchConfigs(
+        sessionId,
+        { new_key: 'new_value' }
+      );
+      expect(result).toEqual({ existing: 'value', new_key: 'new_value' });
+    });
+
+    test('should patch configs - update existing keys', async () => {
+      const sessionId = 'test-session-id';
+      client.mock().onPatch(`/session/${sessionId}/configs`, () => {
+        return { configs: { key: 'updated_value', other: 'preserved' } };
+      });
+
+      const result = await client.sessions.patchConfigs(
+        sessionId,
+        { key: 'updated_value' }
+      );
+      expect(result).toEqual({ key: 'updated_value', other: 'preserved' });
+    });
+
+    test('should patch configs - delete keys with null', async () => {
+      const sessionId = 'test-session-id';
+      client.mock().onPatch(`/session/${sessionId}/configs`, (options) => {
+        const data = options?.jsonData as Record<string, unknown>;
+        expect(data?.configs).toEqual({ deleted_key: null });
+        return { configs: { remaining: 'value' } }; // deleted_key was removed
+      });
+
+      const result = await client.sessions.patchConfigs(
+        sessionId,
+        { deleted_key: null }
+      );
+      expect(result).toEqual({ remaining: 'value' });
+      expect(result.deleted_key).toBeUndefined();
+    });
   });
 
   describe('Disks API', () => {

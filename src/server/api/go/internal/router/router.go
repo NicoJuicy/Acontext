@@ -68,6 +68,7 @@ func NewRouter(d RouterDeps) *gin.Engine {
 			session.DELETE("/:session_id", d.SessionHandler.DeleteSession)
 
 			session.PUT("/:session_id/configs", d.SessionHandler.UpdateConfigs)
+			session.PATCH("/:session_id/configs", d.SessionHandler.PatchConfigs)
 			session.GET("/:session_id/configs", d.SessionHandler.GetConfigs)
 
 			session.POST("/:session_id/messages", d.SessionHandler.StoreMessage)

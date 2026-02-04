@@ -152,6 +152,20 @@ definitions:
         additionalProperties: true
         type: object
     type: object
+  handler.PatchSessionConfigsReq:
+    properties:
+      configs:
+        additionalProperties: true
+        type: object
+    required:
+    - configs
+    type: object
+  handler.PatchSessionConfigsResp:
+    properties:
+      configs:
+        additionalProperties: true
+        type: object
+    type: object
   handler.StoreMessageReq:
     properties:
       blob: {}
@@ -2199,6 +2213,77 @@ paths:
           // Get session configs
           const session = await client.sessions.getConfigs('session-uuid');
           console.log(session.configs);
+    patch:
+      consumes:
+      - application/json
+      description: Update session configs using patch semantics. Only updates keys
+        present in the request. Pass null as value to delete a key. Returns the complete
+        configs after patch.
+      parameters:
+      - description: Session ID
+        format: uuid
+        in: path
+        name: session_id
+        required: true
+        type: string
+      - description: PatchSessionConfigs payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PatchSessionConfigsReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/serializer.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/handler.PatchSessionConfigsResp'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "404":
+          description: Session not found
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      security:
+      - BearerAuth: []
+      summary: Patch session configs
+      tags:
+      - session
+      x-code-samples:
+      - label: Python
+        lang: python
+        source: |
+          from acontext import AcontextClient
+
+          client = AcontextClient(api_key='sk_project_token')
+
+          # Patch session configs (adds/updates keys, use None to delete)
+          updated_configs = client.sessions.patch_configs(
+              session_id='session-uuid',
+              configs={'agent': 'bot2', 'old_key': None}  # None deletes the key
+          )
+          print(updated_configs)  # {'existing_key': 'value', 'agent': 'bot2'}
+      - label: JavaScript
+        lang: javascript
+        source: |
+          import { AcontextClient } from '@acontext/acontext';
+
+          const client = new AcontextClient({ apiKey: 'sk_project_token' });
+
+          // Patch session configs (adds/updates keys, use null to delete)
+          const updatedConfigs = await client.sessions.patchConfigs(
+            'session-uuid',
+            { agent: 'bot2', old_key: null }  // null deletes the key
+          );
+          console.log(updatedConfigs);  // { existing_key: 'value', agent: 'bot2' }
     put:
       consumes:
       - application/json

@@ -1306,6 +1306,77 @@
           "source" : "import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Get session configs\nconst session = await client.sessions.getConfigs('session-uuid');\nconsole.log(session.configs);\n"
         } ]
       },
+      "patch" : {
+        "description" : "Update session configs using patch semantics. Only updates keys present in the request. Pass null as value to delete a key. Returns the complete configs after patch.",
+        "parameters" : [ {
+          "description" : "Session ID",
+          "in" : "path",
+          "name" : "session_id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/handler.PatchSessionConfigsReq"
+              }
+            }
+          },
+          "description" : "PatchSessionConfigs payload",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/_session__session_id__configs_patch_200_response"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Invalid request"
+          },
+          "404" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Session not found"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ],
+        "summary" : "Patch session configs",
+        "tags" : [ "session" ],
+        "x-code-samples" : [ {
+          "label" : "Python",
+          "lang" : "python",
+          "source" : "from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Patch session configs (adds/updates keys, use None to delete)\nupdated_configs = client.sessions.patch_configs(\n    session_id='session-uuid',\n    configs={'agent': 'bot2', 'old_key': None}  # None deletes the key\n)\nprint(updated_configs)  # {'existing_key': 'value', 'agent': 'bot2'}\n"
+        }, {
+          "label" : "JavaScript",
+          "lang" : "javascript",
+          "source" : "import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Patch session configs (adds/updates keys, use null to delete)\nconst updatedConfigs = await client.sessions.patchConfigs(\n  'session-uuid',\n  { agent: 'bot2', old_key: null }  // null deletes the key\n);\nconsole.log(updatedConfigs);  // { existing_key: 'value', agent: 'bot2' }\n"
+        } ],
+        "x-codegen-request-body-name" : "payload"
+      },
       "put" : {
         "description" : "Update session configs by id",
         "parameters" : [ {
@@ -2110,6 +2181,25 @@
       "handler.PatchMessageMetaResp" : {
         "properties" : {
           "meta" : {
+            "additionalProperties" : true,
+            "type" : "object"
+          }
+        },
+        "type" : "object"
+      },
+      "handler.PatchSessionConfigsReq" : {
+        "properties" : {
+          "configs" : {
+            "additionalProperties" : true,
+            "type" : "object"
+          }
+        },
+        "required" : [ "configs" ],
+        "type" : "object"
+      },
+      "handler.PatchSessionConfigsResp" : {
+        "properties" : {
+          "configs" : {
             "additionalProperties" : true,
             "type" : "object"
           }
@@ -2964,6 +3054,18 @@
           "properties" : {
             "data" : {
               "$ref" : "#/components/schemas/model.Session"
+            }
+          },
+          "type" : "object"
+        } ]
+      },
+      "_session__session_id__configs_patch_200_response" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/serializer.Response"
+        }, {
+          "properties" : {
+            "data" : {
+              "$ref" : "#/components/schemas/handler.PatchSessionConfigsResp"
             }
           },
           "type" : "object"

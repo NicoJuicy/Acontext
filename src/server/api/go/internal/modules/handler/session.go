@@ -710,6 +710,14 @@ type PatchMessageMetaResp struct {
 	Meta map[string]interface{} `json:"meta"`
 }
 
+type PatchSessionConfigsReq struct {
+	Configs map[string]interface{} `form:"configs" json:"configs" binding:"required"`
+}
+
+type PatchSessionConfigsResp struct {
+	Configs map[string]interface{} `json:"configs"`
+}
+
 // PatchMessageMeta godoc
 //
 //	@Summary		Patch message metadata
@@ -769,4 +777,58 @@ func (h *SessionHandler) PatchMessageMeta(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, serializer.Response{Data: PatchMessageMetaResp{Meta: updatedMeta}})
+}
+
+// PatchConfigs godoc
+//
+//	@Summary		Patch session configs
+//	@Description	Update session configs using patch semantics. Only updates keys present in the request. Pass null as value to delete a key. Returns the complete configs after patch.
+//	@Tags			session
+//	@Accept			json
+//	@Produce		json
+//	@Param			session_id	path	string							true	"Session ID"	format(uuid)
+//	@Param			payload		body	handler.PatchSessionConfigsReq	true	"PatchSessionConfigs payload"
+//	@Security		BearerAuth
+//	@Success		200	{object}	serializer.Response{data=handler.PatchSessionConfigsResp}
+//	@Failure		400	{object}	serializer.Response	"Invalid request"
+//	@Failure		404	{object}	serializer.Response	"Session not found"
+//	@Router			/session/{session_id}/configs [patch]
+//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Patch session configs (adds/updates keys, use None to delete)\nupdated_configs = client.sessions.patch_configs(\n    session_id='session-uuid',\n    configs={'agent': 'bot2', 'old_key': None}  # None deletes the key\n)\nprint(updated_configs)  # {'existing_key': 'value', 'agent': 'bot2'}\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Patch session configs (adds/updates keys, use null to delete)\nconst updatedConfigs = await client.sessions.patchConfigs(\n  'session-uuid',\n  { agent: 'bot2', old_key: null }  // null deletes the key\n);\nconsole.log(updatedConfigs);  // { existing_key: 'value', agent: 'bot2' }\n","label":"JavaScript"}]
+func (h *SessionHandler) PatchConfigs(c *gin.Context) {
+	req := PatchSessionConfigsReq{}
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, serializer.ParamErr("", err))
+		return
+	}
+
+	// Validate configs size (max 64KB)
+	configsBytes, _ := json.Marshal(req.Configs)
+	if len(configsBytes) > MaxMetaSize {
+		c.JSON(http.StatusBadRequest, serializer.ParamErr("configs size exceeds 64KB limit", nil))
+		return
+	}
+
+	project, ok := c.MustGet("project").(*model.Project)
+	if !ok {
+		c.JSON(http.StatusBadRequest, serializer.ParamErr("", errors.New("project not found")))
+		return
+	}
+
+	sessionID, err := uuid.Parse(c.Param("session_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, serializer.ParamErr("invalid session_id", err))
+		return
+	}
+
+	updatedConfigs, err := h.svc.PatchConfigs(c.Request.Context(), project.ID, sessionID, req.Configs)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			c.JSON(http.StatusNotFound, serializer.Err(http.StatusNotFound, err.Error(), nil))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, serializer.DBErr("", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, serializer.Response{Data: PatchSessionConfigsResp{Configs: updatedConfigs}})
 }

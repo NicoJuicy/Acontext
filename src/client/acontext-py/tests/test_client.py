@@ -1431,3 +1431,65 @@ def test_patch_message_meta_deletes_keys_with_none(
     assert kwargs["json_data"] == {"meta": {"deleted_key": None}}
     assert "deleted_key" not in result
     assert result == {"remaining": "value"}
+
+
+@patch("acontext.client.AcontextClient.request")
+def test_patch_configs_adds_new_keys(
+    mock_request, client: AcontextClient
+) -> None:
+    """Test patch_configs adds new keys."""
+    mock_request.return_value = {
+        "configs": {"existing": "value", "new_key": "new_value"},
+    }
+
+    result = client.sessions.patch_configs(
+        "session-id",
+        configs={"new_key": "new_value"},
+    )
+
+    mock_request.assert_called_once()
+    args, kwargs = mock_request.call_args
+    method, path = args
+    assert method == "PATCH"
+    assert path == "/session/session-id/configs"
+    assert kwargs["json_data"] == {"configs": {"new_key": "new_value"}}
+    assert result == {"existing": "value", "new_key": "new_value"}
+
+
+@patch("acontext.client.AcontextClient.request")
+def test_patch_configs_updates_existing_keys(
+    mock_request, client: AcontextClient
+) -> None:
+    """Test patch_configs updates existing keys."""
+    mock_request.return_value = {
+        "configs": {"key": "updated_value", "other": "preserved"},
+    }
+
+    result = client.sessions.patch_configs(
+        "session-id",
+        configs={"key": "updated_value"},
+    )
+
+    mock_request.assert_called_once()
+    assert result == {"key": "updated_value", "other": "preserved"}
+
+
+@patch("acontext.client.AcontextClient.request")
+def test_patch_configs_deletes_keys_with_none(
+    mock_request, client: AcontextClient
+) -> None:
+    """Test patch_configs deletes keys when value is None."""
+    mock_request.return_value = {
+        "configs": {"remaining": "value"},  # "deleted_key" was removed
+    }
+
+    result = client.sessions.patch_configs(
+        "session-id",
+        configs={"deleted_key": None},
+    )
+
+    mock_request.assert_called_once()
+    args, kwargs = mock_request.call_args
+    assert kwargs["json_data"] == {"configs": {"deleted_key": None}}
+    assert "deleted_key" not in result
+    assert result == {"remaining": "value"}

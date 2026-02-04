@@ -35,6 +35,7 @@ type SessionService interface {
 	GetAllMessages(ctx context.Context, sessionID uuid.UUID) ([]model.Message, error)
 	GetSessionObservingStatus(ctx context.Context, sessionID string) (*model.MessageObservingStatus, error)
 	PatchMessageMeta(ctx context.Context, projectID uuid.UUID, sessionID uuid.UUID, messageID uuid.UUID, patchMeta map[string]interface{}) (map[string]interface{}, error)
+	PatchConfigs(ctx context.Context, projectID uuid.UUID, sessionID uuid.UUID, patchConfigs map[string]interface{}) (map[string]interface{}, error)
 }
 
 type sessionService struct {
@@ -692,4 +693,53 @@ func (s *sessionService) PatchMessageMeta(
 	}
 
 	return userMeta, nil
+}
+
+// PatchConfigs updates session configs using patch semantics.
+// Only updates keys present in patchConfigs. Use nil value to delete a key.
+// Returns the updated configs.
+func (s *sessionService) PatchConfigs(
+	ctx context.Context,
+	projectID uuid.UUID,
+	sessionID uuid.UUID,
+	patchConfigs map[string]interface{},
+) (map[string]interface{}, error) {
+	// Verify session exists and belongs to project
+	session, err := s.sessionRepo.Get(ctx, &model.Session{ID: sessionID})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("session not found")
+		}
+		return nil, fmt.Errorf("failed to get session: %w", err)
+	}
+	if session.ProjectID != projectID {
+		return nil, fmt.Errorf("session not found")
+	}
+
+	// Get existing configs
+	existingConfigs := make(map[string]interface{})
+	if session.Configs != nil {
+		for k, v := range session.Configs {
+			existingConfigs[k] = v
+		}
+	}
+
+	// Apply patch: merge new keys, delete keys with nil value
+	for k, v := range patchConfigs {
+		if v == nil {
+			delete(existingConfigs, k) // null value = delete key
+		} else {
+			existingConfigs[k] = v // add or update key
+		}
+	}
+
+	// Save to database
+	if err := s.sessionRepo.Update(ctx, &model.Session{
+		ID:      sessionID,
+		Configs: datatypes.JSONMap(existingConfigs),
+	}); err != nil {
+		return nil, fmt.Errorf("failed to update session configs: %w", err)
+	}
+
+	return existingConfigs, nil
 }
