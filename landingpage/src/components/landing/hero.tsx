@@ -191,7 +191,7 @@ export function Hero() {
             <span className="font-medium text-foreground/90 sm:whitespace-nowrap">
               skill-based memory
             </span>{' '}
-            that's filesystem-compatible, configurable, and human-readable.
+            that&apos;s filesystem-compatible, configurable, and human-readable.
           </p>
         </div>
 

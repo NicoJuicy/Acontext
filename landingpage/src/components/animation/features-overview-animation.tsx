@@ -667,6 +667,7 @@ export function FeaturesOverviewAnimation() {
     }, container)
 
     return () => ctx.revert()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colors])
 
   return (
@@ -1255,7 +1256,7 @@ function Pillar({
   icon,
   title,
   description,
-  color,
+  color: _color,
 }: {
   dataPillar: string
   icon: string
@@ -1332,7 +1333,7 @@ function StorageBox({
   description,
   icon,
   initialX,
-  color,
+  color: _color,
 }: {
   dataStorage: string
   title: string
@@ -1364,6 +1365,7 @@ function StorageBox({
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function Arrow({ dataFlow }: { dataFlow: string }) {
   const colors = useColors()
   return (
@@ -1412,7 +1414,7 @@ function TaskBox({
   title,
   status,
   progress,
-  color,
+  color: _color,
 }: {
   dataTask?: boolean
   title: string
@@ -1493,7 +1495,8 @@ function ExperienceBox({
   )
 }
 
-function SearchButton({ dataQuery, color }: { dataQuery: string; color: string }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function SearchButton({ dataQuery, color: _color }: { dataQuery: string; color: string }) {
   const colors = useColors()
   return (
     <button
@@ -1511,6 +1514,7 @@ function SearchButton({ dataQuery, color }: { dataQuery: string; color: string }
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function SearchResult({
   dataResult,
   title,
@@ -1545,7 +1549,7 @@ function SkillBox({
   title,
   description,
   icon,
-  color,
+  color: _color,
 }: {
   dataSkill: string
   title: string
@@ -1594,7 +1598,7 @@ function SkillBox({
   )
 }
 
-function SkillArrow({ dataSkill, color }: { dataSkill: string; color: string }) {
+function SkillArrow({ dataSkill, color: _color }: { dataSkill: string; color: string }) {
   const colors = useColors()
   return (
     <svg

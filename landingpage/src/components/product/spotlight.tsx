@@ -57,7 +57,7 @@ const spotlightCards: SpotlightCard[] = [
 ]
 
 function SpotlightCardComponent({ card }: { card: SpotlightCard }) {
-  const [isHovered, setIsHovered] = useState(false)
+  const [_isHovered, setIsHovered] = useState(false)
   const Icon = card.icon
 
   const content = (

@@ -9,7 +9,7 @@ import { StoreDemo } from '../animation/demos/store-demo'
 import { ObserveDemo } from '../animation/demos/observe-demo'
 import { SkillsDemo } from '../animation/demos/skills-demo'
 import { DashboardDemo } from '../animation/demos/dashboard-demo'
-import type { FeatureTab, FeatureTabId } from '../animation/demos/shared'
+import type { FeatureTab } from '../animation/demos/shared'
 import { TAB_COLORS } from '../animation/demos/shared'
 
 // ─── Tab definitions ────────────────────────────────────────────────────────

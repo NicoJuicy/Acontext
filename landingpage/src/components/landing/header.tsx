@@ -20,7 +20,7 @@ import {
   Brain,
   Box,
 } from 'lucide-react'
-import type { Media } from '@/payload-types'
+
 import { useTheme } from 'next-themes'
 import { useEffect, useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
@@ -39,7 +39,7 @@ export function Header() {
   const [latestPosts, setLatestPosts] = useState<Post[]>([])
   const [postsLoaded, setPostsLoaded] = useState(false)
   const [starCount, setStarCount] = useState<number | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
+  const [_isMobile, setIsMobile] = useState(false)
   const [logoCollapsed, setLogoCollapsed] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -176,7 +176,7 @@ export function Header() {
     setShowMobileMenu(false)
   }
 
-  const isDark = mounted ? resolvedTheme === 'dark' : true
+  const _isDark = mounted ? resolvedTheme === 'dark' : true
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-header border-b border-border/50">
