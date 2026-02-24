@@ -222,12 +222,14 @@ function FeatureCard({ feature, group }: { feature: Feature; group: FeatureGroup
 
       <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
 
-      <div className="mt-auto rounded-lg bg-muted/50 border border-border/50 overflow-hidden">
+      <div className="mt-auto rounded-lg bg-muted/50 border border-border/50 overflow-hidden flex flex-col">
         <div className="px-3 py-1.5 border-b border-border/50 text-muted-foreground/70 bg-muted/30 text-xs font-mono">
           {feature.example.title}
         </div>
-        <div className="px-3 py-2 overflow-x-auto">
-          <HighlightedCode code={feature.example.code} language="python" />
+        <div className="py-2 overflow-x-auto flex-1">
+          <div className="px-3 min-w-fit">
+            <HighlightedCode code={feature.example.code} language="python" />
+          </div>
         </div>
       </div>
     </div>

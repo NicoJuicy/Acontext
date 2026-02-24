@@ -263,27 +263,31 @@ export function HowItWorks() {
 
         {/* Code panels */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col">
             <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${active.leftPanel.dotColor}`} />
               <span className="text-sm font-medium text-foreground font-mono">
                 {active.leftPanel.filename}
               </span>
             </div>
-            <div className="px-4 py-4 overflow-x-auto">
-              <HighlightedCode code={active.leftPanel.code} language="python" />
+            <div className="py-4 overflow-x-auto flex-1">
+              <div className="px-4 min-w-fit">
+                <HighlightedCode code={active.leftPanel.code} language="python" />
+              </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col">
             <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${active.rightPanel.dotColor}`} />
               <span className="text-sm font-medium text-foreground font-mono">
                 {active.rightPanel.filename}
               </span>
             </div>
-            <div className="px-4 py-4 overflow-x-auto">
-              <HighlightedCode code={active.rightPanel.code} language="python" />
+            <div className="py-4 overflow-x-auto flex-1">
+              <div className="px-4 min-w-fit">
+                <HighlightedCode code={active.rightPanel.code} language="python" />
+              </div>
             </div>
           </div>
         </div>

@@ -101,23 +101,27 @@ export function HowItWorks() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col">
             <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-indigo-500/60" />
               <span className="text-sm font-medium text-foreground font-mono">observe.py</span>
             </div>
-            <div className="px-4 py-4 overflow-x-auto">
-              <HighlightedCode code={observeExample} language="python" />
+            <div className="py-4 overflow-x-auto flex-1">
+              <div className="px-4 min-w-fit">
+                <HighlightedCode code={observeExample} language="python" />
+              </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col">
             <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
               <span className="text-sm font-medium text-foreground font-mono">analytics.py</span>
             </div>
-            <div className="px-4 py-4 overflow-x-auto">
-              <HighlightedCode code={dashboardExample} language="python" />
+            <div className="py-4 overflow-x-auto flex-1">
+              <div className="px-4 min-w-fit">
+                <HighlightedCode code={dashboardExample} language="python" />
+              </div>
             </div>
           </div>
         </div>

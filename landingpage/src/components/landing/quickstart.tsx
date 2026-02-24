@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { Database, Sparkles, Layers, Activity, ArrowRight, Check, Copy } from 'lucide-react'
+import { Database, Sparkles, Layers, Activity, HardDrive, ArrowRight, Check, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { HighlightedCode } from '@/components/ui/highlighted-code'
 
@@ -28,62 +28,6 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  {
-    id: 'context-storage',
-    label: 'Context Storage',
-    Icon: Database,
-    dotColor: 'bg-blue-400',
-    headerDotColor: 'bg-blue-500/60',
-    activeColor: 'border-blue-500 text-blue-400',
-    description:
-      'Store and retrieve agent messages in any LLM format — OpenAI, Anthropic, Gemini.',
-    docsUrl: 'https://docs.acontext.app/store/messages',
-    snippets: {
-      python: {
-        filename: 'store.py',
-        language: 'python',
-        install: 'pip install acontext',
-        code: `from acontext import AcontextClient
-
-client = AcontextClient()
-
-# Create a session
-session = client.sessions.create()
-
-# Store messages (any provider format)
-client.sessions.store_message(
-    session.id,
-    blob={"role": "user", "content": "Hello!"}
-)
-
-# Retrieve in any format: openai, anthropic, gemini
-messages = client.sessions.get_messages(
-    session.id, format="anthropic"
-)`,
-      },
-      typescript: {
-        filename: 'store.ts',
-        language: 'typescript',
-        install: 'npm install @acontext/acontext',
-        code: `import { AcontextClient } from "@acontext/acontext"
-
-const client = new AcontextClient()
-
-// Create a session
-const session = await client.sessions.create()
-
-// Store messages (any provider format)
-await client.sessions.storeMessage(session.id,
-  { role: "user", content: "Hello!" }
-)
-
-// Retrieve in any format: openai, anthropic, gemini
-const messages = await client.sessions.getMessages(
-  session.id, { format: "anthropic" }
-)`,
-      },
-    },
-  },
   {
     id: 'skill-memory',
     label: 'Skill Memory',
@@ -145,6 +89,62 @@ for (const skill of skills) {
     },
   },
   {
+    id: 'context-storage',
+    label: 'Context Storage',
+    Icon: Database,
+    dotColor: 'bg-blue-400',
+    headerDotColor: 'bg-blue-500/60',
+    activeColor: 'border-blue-500 text-blue-400',
+    description:
+      'Store and retrieve agent messages in any LLM format — OpenAI, Anthropic, Gemini.',
+    docsUrl: 'https://docs.acontext.app/store/messages',
+    snippets: {
+      python: {
+        filename: 'store.py',
+        language: 'python',
+        install: 'pip install acontext',
+        code: `from acontext import AcontextClient
+
+client = AcontextClient()
+
+# Create a session
+session = client.sessions.create()
+
+# Store messages (any provider format)
+client.sessions.store_message(
+    session.id,
+    blob={"role": "user", "content": "Hello!"}
+)
+
+# Retrieve in any format: openai, anthropic, gemini
+messages = client.sessions.get_messages(
+    session.id, format="anthropic"
+)`,
+      },
+      typescript: {
+        filename: 'store.ts',
+        language: 'typescript',
+        install: 'npm install @acontext/acontext',
+        code: `import { AcontextClient } from "@acontext/acontext"
+
+const client = new AcontextClient()
+
+// Create a session
+const session = await client.sessions.create()
+
+// Store messages (any provider format)
+await client.sessions.storeMessage(session.id,
+  { role: "user", content: "Hello!" }
+)
+
+// Retrieve in any format: openai, anthropic, gemini
+const messages = await client.sessions.getMessages(
+  session.id, { format: "anthropic" }
+)`,
+      },
+    },
+  },
+  {
     id: 'context-engineering',
     label: 'Context Engineering',
     Icon: Layers,
@@ -199,6 +199,79 @@ const result = await client.sessions.getMessages(session.id, {
   ],
 })
 console.log(\`Tokens: \${result.this_time_tokens}\`)`,
+      },
+    },
+  },
+  {
+    id: 'filesystem',
+    label: 'Filesystem',
+    Icon: HardDrive,
+    dotColor: 'bg-rose-400',
+    headerDotColor: 'bg-rose-500/60',
+    activeColor: 'border-rose-500 text-rose-400',
+    description:
+      'S3-backed file storage with paths, metadata, and secure download URLs for your agent.',
+    docsUrl: 'https://docs.acontext.app/store/disk',
+    snippets: {
+      python: {
+        filename: 'disk.py',
+        language: 'python',
+        install: 'pip install acontext',
+        code: `from acontext import AcontextClient, FileUpload
+
+client = AcontextClient()
+
+# Create a disk and upload a file
+disk = client.disks.create()
+client.disks.artifacts.upsert(
+    disk.id,
+    file=FileUpload(filename="notes.md", content=b"# Meeting Notes"),
+    file_path="/docs/",
+    meta={"author": "alice"}
+)
+
+# List and search files
+files = client.disks.artifacts.list(disk.id, path="/docs/")
+results = client.disks.artifacts.glob_artifacts(disk.id, query="**/*.md")
+
+# Get file with a secure download URL
+artifact = client.disks.artifacts.get(
+    disk.id, file_path="/docs/", filename="notes.md",
+    with_public_url=True
+)
+print(artifact.public_url)`,
+      },
+      typescript: {
+        filename: 'disk.ts',
+        language: 'typescript',
+        install: 'npm install @acontext/acontext',
+        code: `import { AcontextClient, FileUpload } from "@acontext/acontext"
+
+const client = new AcontextClient()
+
+// Create a disk and upload a file
+const disk = await client.disks.create()
+await client.disks.artifacts.upsert(disk.id, {
+  file: new FileUpload({
+    filename: "notes.md",
+    content: Buffer.from("# Meeting Notes"),
+  }),
+  filePath: "/docs/",
+  meta: { author: "alice" },
+})
+
+// List and search files
+const files = await client.disks.artifacts.list(disk.id, { path: "/docs/" })
+const results = await client.disks.artifacts.globArtifacts(disk.id, {
+  query: "**/*.md",
+})
+
+// Get file with a secure download URL
+const artifact = await client.disks.artifacts.get(disk.id, {
+  filePath: "/docs/", filename: "notes.md",
+  withPublicUrl: true,
+})
+console.log(artifact.publicUrl)`,
       },
     },
   },
@@ -384,7 +457,7 @@ export function Quickstart() {
           </div>
 
           {/* Right column — code panel */}
-          <div className="group/code rounded-xl border border-border bg-card overflow-hidden">
+          <div className="group/code rounded-xl border border-border bg-card overflow-hidden flex flex-col">
             {/* File tab header */}
             <div className="px-4 py-2.5 border-b border-border bg-muted/30 flex items-center">
               <div className="flex items-center gap-2">
@@ -396,7 +469,7 @@ export function Quickstart() {
             </div>
 
             {/* Code content area */}
-            <div className="relative">
+            <div className="relative flex-1">
               <InlineCopyButton code={snippet.code} />
 
               <AnimatePresence mode="wait">
@@ -406,13 +479,15 @@ export function Quickstart() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.2 }}
-                  className="px-4 py-4 overflow-x-auto"
+                  className="py-4 overflow-x-auto"
                 >
-                  <HighlightedCode
-                    code={snippet.code}
-                    language={snippet.language}
-                    className="[&_code]:text-xs sm:[&_code]:text-sm"
-                  />
+                  <div className="px-4 min-w-fit">
+                    <HighlightedCode
+                      code={snippet.code}
+                      language={snippet.language}
+                      className="[&_code]:text-xs sm:[&_code]:text-sm"
+                    />
+                  </div>
                 </motion.div>
               </AnimatePresence>
             </div>
