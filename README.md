@@ -54,11 +54,10 @@ Unifies **short-term memory, mid-term state, and long-term skill** for productio
 
 - **Short-term Memory**
   - [Session](https://docs.acontext.app/store/messages/multi-provider): save agent history from any LLM, any modality
-  - [Disk](https://docs.acontext.app/store/disk): virtual, persistent filesystem
 - **Mid-term State**
-  - [State Tracking](https://docs.acontext.app/observe/agent_tasks): collect agent states in near real-time
+  - [State Tracking](https://docs.acontext.app/observe/agent_tasks): collect agent tasks and results in near real-time
 - **Long-term Skill**
-  - [Long-term Skill Memory](https://docs.acontext.app/learn/quick) - agents automatically build and update skills from successful/failed sessions
+  - [Skill Memory](https://docs.acontext.app/learn/skill-memory) - agents automatically build and update skills from successful/failed sessions
 
 <div align="center">
     <picture>
