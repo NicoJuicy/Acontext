@@ -18,6 +18,7 @@ import {
   MintCheck,
   MintParamField,
 } from '@/components/mintlify-compat';
+import { Mermaid } from '@/components/mermaid';
 
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
@@ -38,6 +39,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     Note: MintNote,
     Check: MintCheck,
     ParamField: MintParamField,
+    Mermaid,
     ...components,
   };
 }

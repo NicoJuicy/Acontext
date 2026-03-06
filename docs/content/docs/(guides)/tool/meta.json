@@ -3,8 +3,6 @@
   "icon": "Sparkles",
   "pages": [
     "whatis",
-    "bash_tools",
-    "disk_tools",
-    "skill_tools"
+    "(features)"
   ]
 }

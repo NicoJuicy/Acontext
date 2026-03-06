@@ -1,12 +1,8 @@
 {
-  "title": "Agent Observability",
+  "title": "Task Tracking",
   "icon": "Radar",
   "pages": [
     "whatis",
-    "agent_tasks",
-    "buffer",
-    "disable_tasks",
-    "dashboard",
-    "traces"
+    "(features)"
   ]
 }

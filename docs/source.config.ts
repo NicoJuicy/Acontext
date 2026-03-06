@@ -1,5 +1,6 @@
 import { defineConfig, defineDocs } from 'fumadocs-mdx/config';
 import { metaSchema, pageSchema } from 'fumadocs-core/source/schema';
+import { remarkMdxMermaid } from 'fumadocs-core/mdx-plugins/remark-mdx-mermaid';
 import lastModified from 'fumadocs-mdx/plugins/last-modified';
 
 export const docs = defineDocs({
@@ -17,6 +18,8 @@ export const docs = defineDocs({
 });
 
 export default defineConfig({
-  mdxOptions: {},
+  mdxOptions: {
+    remarkPlugins: [remarkMdxMermaid],
+  },
   plugins: [lastModified()],
 });

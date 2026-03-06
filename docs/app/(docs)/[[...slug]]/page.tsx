@@ -4,10 +4,17 @@ import {
   DocsPage,
   PageLastUpdate,
 } from 'fumadocs-ui/layouts/docs/page';
-import { notFound } from 'next/navigation';
 import { getMDXComponents } from '@/mdx-components';
-import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { APIPage } from '@/components/api-page';
+import { NotFound } from '@/components/not-found';
+import { LLMCopyButton, ViewMarkdownLink } from '@/components/llm-copy-button';
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from '@/components/hover-link';
+import Link from 'fumadocs-core/link';
+import { PathUtils } from 'fumadocs-core/source';
 import type { Metadata } from 'next';
 
 export const revalidate = false;
@@ -21,7 +28,10 @@ interface PageProps {
 export default async function Page(props: PageProps) {
   const params = await props.params;
   const page = source.getPage(params.slug);
-  if (!page) notFound();
+
+  if (!page) {
+    return <NotFound slug={params.slug} />;
+  }
 
   if ('getAPIPageProps' in page.data) {
     return (
@@ -36,6 +46,7 @@ export default async function Page(props: PageProps) {
 
   const data = await page.data.load();
   const MDX = data.body;
+  const markdownUrl = `/llms.mdx${page.url}`;
 
   return (
     <DocsPage
@@ -47,10 +58,44 @@ export default async function Page(props: PageProps) {
       <p className="text-lg text-fd-muted-foreground mb-2">
         {page.data.description}
       </p>
+      <div className="flex flex-row flex-wrap gap-2 items-center border-b pb-4 mb-4">
+        <LLMCopyButton markdownUrl={markdownUrl} />
+        <ViewMarkdownLink
+          markdownUrl={markdownUrl}
+          githubUrl={`https://github.com/memodb-io/Acontext/blob/main/docs/content/docs/${page.path}`}
+        />
+      </div>
       <DocsBody>
         <MDX
           components={getMDXComponents({
-            a: createRelativeLink(source, page),
+            a: ({ href, ...props }) => {
+              const found = source.getPageByHref(href ?? '', {
+                dir: PathUtils.dirname(page.path),
+              });
+
+              if (!found) return <Link href={href} {...props} />;
+
+              return (
+                <HoverCard>
+                  <HoverCardTrigger
+                    href={
+                      found.hash
+                        ? `${found.page.url}#${found.hash}`
+                        : found.page.url
+                    }
+                    {...props}
+                  >
+                    {props.children}
+                  </HoverCardTrigger>
+                  <HoverCardContent className="text-sm">
+                    <p className="font-medium">{found.page.data.title}</p>
+                    <p className="text-fd-muted-foreground">
+                      {found.page.data.description}
+                    </p>
+                  </HoverCardContent>
+                </HoverCard>
+              );
+            },
           })}
         />
       </DocsBody>
@@ -66,7 +111,9 @@ export async function generateStaticParams() {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const params = await props.params;
   const page = source.getPage(params.slug);
-  if (!page) notFound();
+  if (!page) {
+    return { title: 'Not Found' };
+  }
 
   const ogImage = {
     url: `${baseUrl}/og/${page.slugs.join('/')}`,

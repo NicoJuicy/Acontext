@@ -1,12 +1,8 @@
 {
-  "title": "Context Storage",
+  "title": "Session Storage",
   "icon": "Database",
   "pages": [
     "overview",
-    "messages",
-    "disk",
-    "skill",
-    "sandbox",
-    "per-user"
+    "(features)"
   ]
 }
