@@ -37,7 +37,7 @@ const TABS: Tab[] = [
     activeColor: 'border-emerald-500 text-emerald-400',
     description:
       'Create a learning space, attach a session, and Acontext builds skill files from successful runs.',
-    docsUrl: 'https://docs.acontext.app/learn/quick',
+    docsUrl: 'https://docs.acontext.io/learn/quick',
     snippets: {
       python: {
         filename: 'skill_memory.py',
@@ -203,7 +203,7 @@ export function Quickstart() {
               </p>
               <div className="flex flex-col gap-2">
                 <a
-                  href="https://docs.acontext.app/learn/quick"
+                  href="https://docs.acontext.io/learn/quick"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
@@ -212,7 +212,7 @@ export function Quickstart() {
                   <ArrowRight className="h-3 w-3" />
                 </a>
                 <a
-                  href="https://docs.acontext.app"
+                  href="https://docs.acontext.io"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"

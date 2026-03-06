@@ -349,7 +349,7 @@ export function Header() {
                 onMouseLeave={handleDocsMouseLeave}
               >
                 <Link
-                  href="https://docs.acontext.app"
+                  href="https://docs.acontext.io"
                   className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
                   aria-label="Go to documentation (opens in new tab)"
                 >
@@ -375,7 +375,7 @@ export function Header() {
                         </div>
                         <div className="py-1">
                           <Link
-                            href="https://docs.acontext.app/api-reference/introduction"
+                            href="https://docs.acontext.io/api-reference/introduction"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -394,7 +394,7 @@ export function Header() {
                             </div>
                           </Link>
                           <Link
-                            href="https://docs.acontext.app/api-reference/agent_skills/create-agent-skill"
+                            href="https://docs.acontext.io/api-reference/agent_skills/create-agent-skill"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -413,7 +413,7 @@ export function Header() {
                             </div>
                           </Link>
                           <Link
-                            href="https://docs.acontext.app/api-reference/artifact/get-artifact"
+                            href="https://docs.acontext.io/api-reference/artifact/get-artifact"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -432,7 +432,7 @@ export function Header() {
                             </div>
                           </Link>
                           <Link
-                            href="https://docs.acontext.app/api-reference/disk/create-disk"
+                            href="https://docs.acontext.io/api-reference/disk/create-disk"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -451,7 +451,7 @@ export function Header() {
                             </div>
                           </Link>
                           <Link
-                            href="https://docs.acontext.app/api-reference/sessions/create-session"
+                            href="https://docs.acontext.io/api-reference/sessions/create-session"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -470,7 +470,7 @@ export function Header() {
                             </div>
                           </Link>
                           <Link
-                            href="https://docs.acontext.app/api-reference/sandbox/create-a-new-sandbox"
+                            href="https://docs.acontext.io/api-reference/sandbox/create-a-new-sandbox"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -498,7 +498,7 @@ export function Header() {
                             Guides
                           </span>
                           <Link
-                            href="https://docs.acontext.app"
+                            href="https://docs.acontext.io"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
@@ -510,7 +510,7 @@ export function Header() {
                         </div>
                         <div className="py-1">
                           <Link
-                            href="https://docs.acontext.app/store/messages"
+                            href="https://docs.acontext.io/store/messages"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -529,7 +529,7 @@ export function Header() {
                             </div>
                           </Link>
                           <Link
-                            href="https://docs.acontext.app/store/artifacts"
+                            href="https://docs.acontext.io/store/artifacts"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -548,7 +548,7 @@ export function Header() {
                             </div>
                           </Link>
                           <Link
-                            href="https://docs.acontext.app/observe/dashboard"
+                            href="https://docs.acontext.io/observe/dashboard"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -567,7 +567,7 @@ export function Header() {
                             </div>
                           </Link>
                           <Link
-                            href="https://docs.acontext.app/observe/traces"
+                            href="https://docs.acontext.io/observe/traces"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -586,7 +586,7 @@ export function Header() {
                             </div>
                           </Link>
                           <Link
-                            href="https://docs.acontext.app/observe/agent_tasks"
+                            href="https://docs.acontext.io/observe/agent_tasks"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="block px-3 py-1 hover:bg-muted/50 transition-colors group"
@@ -899,7 +899,7 @@ export function Header() {
                 </div>
               </Link>
               <Link
-                href="https://docs.acontext.app"
+                href="https://docs.acontext.io"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={handleMobileLinkClick}

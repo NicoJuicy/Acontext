@@ -578,7 +578,7 @@ export function TutorialVideo() {
                     </div>
                     <div className="flex flex-col gap-2 mt-4">
                       <CTALink>⭐ Star on GitHub</CTALink>
-                      <CTALink>📚 docs.acontext.app</CTALink>
+                      <CTALink>📚 docs.acontext.io</CTALink>
                       <CTALink>💬 discord.acontext.io</CTALink>
                     </div>
                   </div>

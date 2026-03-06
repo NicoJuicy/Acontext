@@ -24,7 +24,7 @@ export function NavMain() {
     },
     {
       title: t("docs"),
-      url: "https://docs.acontext.app/",
+      url: "https://docs.acontext.io/",
       icon: BookText,
     },
   ];

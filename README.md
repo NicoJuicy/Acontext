@@ -5,7 +5,7 @@
  	<p align="center">
  	  	<a href="https://acontext.io">🌐 Website</a>
       |
- 	  	<a href="https://docs.acontext.app">📚 Document</a>
+ 	  	<a href="https://docs.acontext.io">📚 Document</a>
   </p>
   <p align="center">
     <a href="https://pypi.org/project/acontext/"><img src="https://img.shields.io/pypi/v/acontext.svg"></a>
@@ -214,10 +214,10 @@ for skill in skills:
 
 ### More Features
 
-- **[Context Engineering](https://docs.acontext.app/engineering/editing)** — Compress context with summaries and edit strategies
-- **[Disk](https://docs.acontext.app/store/disk)** — Virtual, persistent filesystem for agents
-- **[Sandbox](https://docs.acontext.app/store/sandbox)** — Isolated code execution with bash, Python, and [mountable skills](https://docs.acontext.app/tool/bash_tools#mounting-skills-in-sandbox)
-- **[Agent Tools](https://docs.acontext.app/tool/whatis)** — Disk tools, sandbox tools, and skill tools for LLM function calling
+- **[Context Engineering](https://docs.acontext.io/engineering/editing)** — Compress context with summaries and edit strategies
+- **[Disk](https://docs.acontext.io/store/disk)** — Virtual, persistent filesystem for agents
+- **[Sandbox](https://docs.acontext.io/store/sandbox)** — Isolated code execution with bash, Python, and [mountable skills](https://docs.acontext.io/tool/bash_tools#mounting-skills-in-sandbox)
+- **[Agent Tools](https://docs.acontext.io/tool/whatis)** — Disk tools, sandbox tools, and skill tools for LLM function calling
 
 
 
@@ -267,7 +267,7 @@ More examples on Typescript:
 
 # 🔍 Document
 
-To learn more about skill memory and what Acontext can do, visit [our docs](https://docs.acontext.app/) or start with [What is Skill Memory?](https://docs.acontext.app/learn/skill-memory)
+To learn more about skill memory and what Acontext can do, visit [our docs](https://docs.acontext.io/) or start with [What is Skill Memory?](https://docs.acontext.io/learn/skill-memory)
 
 
 
