@@ -54,11 +54,16 @@ client.learning_spaces.learn(space.id, session_id=session.id)
 
 # Run your agent, store messages — when tasks complete, learning runs automatically
 client.sessions.store_message(session.id, blob={"role": "user", "content": "My name is Gus"})
+client.sessions.store_message(session.id, blob={"role": "assistant", "content": "Hi Gus! How can I help you today?"})
 # ... agent runs ...
 
-# List and read learned skills (Markdown files)
+# List learned skills (Markdown files)
 client.learning_spaces.wait_for_learning(space.id, session_id=session.id)
-skills = client.learning_spaces.list_skills(space.id)`,
+skills = client.learning_spaces.list_skills(space.id)
+
+# Download all skill files to a local directory
+for skill in skills:
+    client.skills.download(skill_id=skill.id, path=f"./skills/{skill.name}")`,
       },
       typescript: {
         filename: 'skill_memory.ts',
@@ -79,13 +84,21 @@ await client.learningSpaces.learn({
 await client.sessions.storeMessage(session.id,
   { role: "user", content: "My name is Gus" }
 )
+await client.sessions.storeMessage(session.id,
+  { role: "assistant", content: "Hi Gus! How can I help you today?" }
+)
 // ... agent runs ...
 
-// List and read learned skills (Markdown files)
+// List learned skills (Markdown files)
 await client.learningSpaces.waitForLearning({
   spaceId: space.id, sessionId: session.id
 })
-const skills = await client.learningSpaces.listSkills(space.id)`,
+const skills = await client.learningSpaces.listSkills(space.id)
+
+// Download all skill files to a local directory
+for (const skill of skills) {
+  await client.skills.download(skill.id, { path: "./skills/" + skill.name })
+}`,
       },
     },
   },

@@ -187,26 +187,27 @@ client = AcontextClient(
 Create a learning space, attach a session, and let the agent learn — skills are written as Markdown files automatically.
 
 ```python
-session = client.sessions.create()
+from acontext import AcontextClient
+
+client = AcontextClient(api_key="sk-ac-...")
+
+# Create a learning space and attach a session
 space = client.learning_spaces.create()
+session = client.sessions.create()
 client.learning_spaces.learn(space.id, session_id=session.id)
 
-# Store messages — your agent runs as usual
-client.sessions.store_message(
-    session_id=session.id,
-    blob={"role": "user", "content": "Deploy the new API to staging"},
-)
-# ... agent completes or fails the task ...
+# Run your agent, store messages — when tasks complete, learning runs automatically
+client.sessions.store_message(session.id, blob={"role": "user", "content": "My name is Gus"})
+client.sessions.store_message(session.id, blob={"role": "assistant", "content": "Hi Gus! How can I help you today?"})
+# ... agent runs ...
 
-# Skills are distilled and written automatically
+# List learned skills (Markdown files)
 client.learning_spaces.wait_for_learning(space.id, session_id=session.id)
 skills = client.learning_spaces.list_skills(space.id)
-for skill in skills:
-    print(f"{skill.name}: {skill.description}")
 
-# On the next run, agent retrieves and reuses skills
-skill = client.skills.get(skill_id=skills[0].id)
-file_content = client.skills.get_file(skill_id=skill.id, file_path="deploy-sop.md")
+# Download all skill files to a local directory
+for skill in skills:
+    client.skills.download(skill_id=skill.id, path=f"./skills/{skill.name}")
 ```
 
 > `wait_for_learning` is a blocking helper for demo purposes. In production, task extraction and learning run in the background automatically — your agent never waits.
