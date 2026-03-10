@@ -26,9 +26,10 @@ const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(valu
 
 const isCLI = process.argv.some((value) => realpath(value)?.endsWith(path.join('payload', 'bin.js')))
 const isProduction = process.env.NODE_ENV === 'production'
+const useLocalBindings = process.env.WRANGLER_LOCAL === 'true'
 
 const cloudflare =
-  isCLI || !isProduction
+  isCLI || !isProduction || useLocalBindings
     ? await getCloudflareContextFromWrangler()
     : await getCloudflareContext({ async: true })
 
@@ -129,7 +130,7 @@ function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
     ({ getPlatformProxy }) =>
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
-        remoteBindings: isProduction,
+        remoteBindings: isProduction && !useLocalBindings,
       } satisfies GetPlatformProxyOptions),
   )
 }
