@@ -7,7 +7,8 @@ Acontext is Agent Skills as a Memory Layer for production AI Agents
 - CLI Tool: `src/client/acontext-cli/`
 - API: `src/server/api/`
 - CORE: `src/server/core/`
-- DASHBOARD: `src/server/ui/`
+- Dashboard: `dashboard/`
+- Dashboard (OSS): `src/server/ui/`
 - OpenClaw Plugin: `src/packages/openclaw/`
 - Sandbox Cloudflare: `src/packages/sandbox-cloudflare/` (template source: `src/server/sandbox/cloudflare/`)
 - Landing Page: `landingpage`
