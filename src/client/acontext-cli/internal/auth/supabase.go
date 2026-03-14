@@ -31,6 +31,7 @@ type OrgMembership struct {
 type OrgProject struct {
 	ProjectID string `json:"project_id"`
 	Name      string `json:"name"`
+	OrgID     string `json:"org_id,omitempty"`
 	OrgName   string `json:"org_name,omitempty"`
 	CreatedAt string `json:"created_at"`
 }

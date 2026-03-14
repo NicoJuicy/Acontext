@@ -27,9 +27,11 @@
 
 ## What is Acontext?
 
-Acontext is an open-source skill memory layer for AI agents. It **automatically** captures learnings from agent runs and stores them as **Markdown files** — files you can read, edit, and share across agents, LLMs, and frameworks.
+Acontext is an open-source skill memory layer for AI agents. It **automatically** captures learnings from agent runs and stores them as **agent skill files** — files you can read, edit, and share across agents, LLMs, and frameworks.
 
 If you want the agent you build to **learn from its mistakes** and **reuse what worked** — without opaque memory polluting your context — give Acontext a try.
+
+
 
 ## Skill is All You Need
 
@@ -37,6 +39,8 @@ Agent memory is getting increasingly complicated🤢 — hard to understand, har
 
 - **Acontext builds memory in the agent skills format**, so everyone can see and understand what the memory actually contains.
 - **Skill is Memory, Memory is Skill**. Whether a skill comes from one you downloaded from Clawhub or one you created yourself, Acontext can follow it and evolve it over time.
+
+
 
 ## The Philosophy of Acontext
 
@@ -74,6 +78,20 @@ flowchart LR
 Give your agent **Skill Content Tools** (`get_skill`, `get_skill_file`). The agent decides what it needs, calls the tools, and gets the skill content. No embedding search — **progressive disclosure, agent in the loop**.
 
 
+
+# 🪜 Use It to Improve your Agent
+
+Claude Code: 
+
+```text
+Read https://acontext.io/SKILL.md and follow the instructions to install and configure Acontext for Claude Code
+```
+
+OpenClaw:
+
+```text
+Read https://acontext.io/SKILL.md and follow the instructions to install and configure Acontext for OpenClaw
+```
 
 
 

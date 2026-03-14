@@ -42,8 +42,9 @@ func init() {
 					continue
 				}
 
-				// Attach org name to each project
+				// Attach org id and name to each project
 				for i := range projects {
+					projects[i].OrgID = org.ID
 					projects[i].OrgName = org.Name
 				}
 				allProjects = append(allProjects, projects...)

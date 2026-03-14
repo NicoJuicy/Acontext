@@ -116,7 +116,7 @@ openclaw gateway
 After you have logged in, you can manage Acontext projects via CLI:
 
 1. `acontext dash projects list --json` — list available projects
-2. If user ask you to use a existing Acontext project, you should let the user to provider the api key. And then switch to this project `acontext dash projects select --project <project-id>`. 
+2. If user ask you to use a existing Acontext project, you should let the user to provider the api key. And then switch to this project `acontext dash projects select --project <project-id> --api-key <sk-ac-...>`. 
 3. To create, ask for an org name and project name, then run: `acontext dash projects create --name <project-name> --org <org-id>`, this command would return the API Key to you, and then select to the new project.
 
 ## CLI Commands Reference
@@ -131,8 +131,8 @@ All dashboard commands are under `acontext dash`:
 
 ### Skill Commands
 
-| Command                            | Description                                |
-| ---------------------------------- | ------------------------------------------ |
+| Command                             | Description                                |
+| ----------------------------------- | ------------------------------------------ |
 | `acontext skill upload <directory>` | Upload a local skill directory to Acontext |
 
 Example — upload a skill directory:
@@ -157,16 +157,16 @@ The directory must contain a `SKILL.md` with name and description in YAML front-
 
 Settings are resolved with priority: `~/.acontext/` files > environment variables > defaults. After running `acontext login`, the plugin works automatically without any env vars.
 
-| Env Var                        | Default                           | Description                                                     |
-| ------------------------------ | --------------------------------- | --------------------------------------------------------------- |
-| `ACONTEXT_API_KEY`             | from `~/.acontext/credentials.json` | Acontext API key (auto-detected from CLI login)               |
-| `ACONTEXT_BASE_URL`            | `https://api.acontext.app/api/v1` | API base URL                                                    |
-| `ACONTEXT_USER_ID`             | from `~/.acontext/auth.json`      | Scope sessions per user (auto-detected from CLI login)          |
-| `ACONTEXT_LEARNING_SPACE_ID`   | auto-created                      | Explicit Learning Space ID                                      |
-| `ACONTEXT_SKILLS_DIR`          | `~/.claude/skills`                | Directory where skills are synced                                |
-| `ACONTEXT_AUTO_CAPTURE`        | `true`                            | Store messages after each agent turn                            |
-| `ACONTEXT_AUTO_LEARN`          | `true`                            | Trigger skill distillation after sessions                       |
-| `ACONTEXT_MIN_TURNS_FOR_LEARN` | `4`                               | Minimum turns before triggering auto-learn                      |
+| Env Var                        | Default                             | Description                                            |
+| ------------------------------ | ----------------------------------- | ------------------------------------------------------ |
+| `ACONTEXT_API_KEY`             | from `~/.acontext/credentials.json` | Acontext API key (auto-detected from CLI login)        |
+| `ACONTEXT_BASE_URL`            | `https://api.acontext.app/api/v1`   | API base URL                                           |
+| `ACONTEXT_USER_ID`             | from `~/.acontext/auth.json`        | Scope sessions per user (auto-detected from CLI login) |
+| `ACONTEXT_LEARNING_SPACE_ID`   | auto-created                        | Explicit Learning Space ID                             |
+| `ACONTEXT_SKILLS_DIR`          | `~/.claude/skills`                  | Directory where skills are synced                      |
+| `ACONTEXT_AUTO_CAPTURE`        | `true`                              | Store messages after each agent turn                   |
+| `ACONTEXT_AUTO_LEARN`          | `true`                              | Trigger skill distillation after sessions              |
+| `ACONTEXT_MIN_TURNS_FOR_LEARN` | `4`                                 | Minimum turns before triggering auto-learn             |
 
 ### Claude Code MCP Tools
 
@@ -205,8 +205,8 @@ All settings are in `openclaw.json` under the plugin config:
 
 ### OpenClaw CLI Commands
 
-| Command                  | Description                               |
-| ------------------------ | ----------------------------------------- |
+| Command                    | Description                               |
+| -------------------------- | ----------------------------------------- |
 | `openclaw acontext skills` | List learned skills in the Learning Space |
 | `openclaw acontext stats`  | Show Acontext memory statistics           |
 

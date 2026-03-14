@@ -38,6 +38,7 @@ func SelectProject(jwt, userID string) (*ProjectChoice, error) {
 			continue
 		}
 		for i := range projects {
+			projects[i].OrgID = org.ID
 			projects[i].OrgName = org.Name
 		}
 		allProjects = append(allProjects, projects...)
