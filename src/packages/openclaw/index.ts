@@ -1033,7 +1033,7 @@ export class AcontextBridge {
 const acontextPlugin = {
   id: "acontext",
   name: "Acontext Skill Memory",
-  version: "0.1.9",
+  version: "0.1.10",
   description:
     "Acontext skill memory — auto-capture, auto-learn, sync skills to OpenClaw native directory",
   kind: "memory" as const,

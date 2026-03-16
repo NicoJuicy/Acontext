@@ -2044,7 +2044,7 @@ describe("plugin metadata", () => {
     expect(plugin.id).toBe("acontext");
     expect(plugin.kind).toBe("memory");
     expect(plugin.name).toBe("Acontext Skill Memory");
-    expect(plugin.version).toBe("0.1.9");
+    expect(plugin.version).toBe("0.1.10");
   });
 });
 
