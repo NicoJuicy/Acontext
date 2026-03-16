@@ -479,7 +479,7 @@ export function LearningSpaceDetailClient({
                   {sessions.map((session) => (
                     <TableRow key={session.id}>
                       <TableCell className="font-mono text-sm">
-                        {session.session_id.slice(0, 8)}&hellip;
+                        {session.session_id}
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge variant={statusVariant(session.status)}>
