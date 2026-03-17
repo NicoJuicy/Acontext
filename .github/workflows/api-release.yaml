@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "api/v*"
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,3 +17,4 @@ jobs:
       context: ./src/server/api/go
       tag_prefix: "api/v"
       display_name: API
+      source_dir: src/server/api/go

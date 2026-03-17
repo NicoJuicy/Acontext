@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'package-claude-code/v*'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -19,18 +18,18 @@ jobs:
         working-directory: src/packages/claude-code
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Extract version from package.json
         id: pkg_version
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Package version: $VERSION"
 
       - name: Extract version from tag
@@ -40,10 +39,10 @@ jobs:
         run: |
           if [[ "$GIT_REF" == refs/tags/* ]]; then
             TAG_NAME=${GIT_REF#refs/tags/package-claude-code/v}
-            echo "version=$TAG_NAME" >> $GITHUB_OUTPUT
+            echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
             echo "Tag version: $TAG_NAME"
           else
-            echo "version=" >> $GITHUB_OUTPUT
+            echo "version=" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Verify tag matches package.json
@@ -122,7 +121,9 @@ jobs:
     needs: verify
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
 
       - name: Extract version from tag
         id: version
@@ -130,29 +131,31 @@ jobs:
           GIT_REF: ${{ github.ref }}
         run: |
           TAG_NAME=${GIT_REF#refs/tags/package-claude-code/v}
-          echo "version=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Generate Changelog
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-          CHANGELOG_FILE: ${{ github.workspace }}-CHANGELOG.txt
         run: |
-          cat > "$CHANGELOG_FILE" << EOF
-          # Claude Code Plugin v${VERSION}
+          FOOTER=$(cat <<'FOOTEREOF'
+## Installation
 
-          ## Installation
+```bash
+claude mcp add-from-marketplace acontext --publisher memodb-io
+```
 
-          \`\`\`bash
-          claude mcp add-from-marketplace acontext --publisher memodb-io
-          \`\`\`
-
-          ## Release Checklist
-          - [x] Version synced across package.json, plugin.json, marketplace.json
-          - [x] Tests passed
-          - [x] Plugin bundles built and verified
-          EOF
+## Release Checklist
+- [x] Version synced across package.json, plugin.json, marketplace.json
+- [x] Tests passed
+- [x] Plugin bundles built and verified
+FOOTEREOF
+          )
+          bash .github/scripts/generate-changelog.sh \
+            --tag-prefix "package-claude-code/v" \
+            --source-dir "src/packages/claude-code" \
+            --display-name "Claude Code Plugin" \
+            --output "${{ github.workspace }}-CHANGELOG.txt" \
+            --footer "$FOOTER"
 
       - name: Create Release
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
         with:
           body_path: ${{ github.workspace }}-CHANGELOG.txt

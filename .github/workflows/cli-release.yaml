@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'cli/v*'
-  workflow_dispatch:
 
 permissions:
   contents: write 
@@ -16,22 +15,21 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Extract version from tag
-        id: version
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/cli/v}
-          echo "version=$TAG_NAME" >> $GITHUB_OUTPUT
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
 
       - name: Generate Changelog
         run: |
-          echo "# CLI v${{ steps.version.outputs.version }}" > ${{ github.workspace }}-CHANGELOG.txt
-          echo "" >> ${{ github.workspace }}-CHANGELOG.txt
-          echo "Binary artifacts are available in this release." >> ${{ github.workspace }}-CHANGELOG.txt
+          bash .github/scripts/generate-changelog.sh \
+            --tag-prefix "cli/v" \
+            --source-dir "src/client/acontext-cli" \
+            --display-name "CLI" \
+            --output "${{ github.workspace }}-CHANGELOG.txt" \
+            --footer "Binary artifacts are available in this release."
 
       - name: Create Release with Notes
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
         with:
           body_path: ${{ github.workspace }}-CHANGELOG.txt
 
@@ -48,16 +46,16 @@ jobs:
             goarch: arm64
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Read Go version from go.mod
         id: go-version
         run: |
           GO_VERSION=$(grep '^go ' src/client/acontext-cli/go.mod | awk '{print $2}')
-          echo "version=$GO_VERSION" >> $GITHUB_OUTPUT
+          echo "version=$GO_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Go Release Binaries 
-        uses: wangyoucao577/go-release-action@279495102627de7960cbc33434ab01a12bae144b # v1
+        uses: wangyoucao577/go-release-action@279495102627de7960cbc33434ab01a12bae144b
         with:
           goversion: ${{ steps.go-version.outputs.version }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'sdk-ts/v*'
-  workflow_dispatch:
 
 permissions:
   contents: write
@@ -20,12 +19,12 @@ jobs:
         working-directory: src/client/acontext-ts
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
         with:
-          node-version: '20'
+          node-version: '22'
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
           cache-dependency-path: src/client/acontext-ts/package-lock.json
@@ -69,23 +68,24 @@ jobs:
         id: version
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Check if version exists
         id: check_version
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          if npm view @acontext/acontext@$VERSION version > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+          if npm view "@acontext/acontext@$VERSION" version > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
             echo "Version $VERSION already exists on npm"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
             echo "Version $VERSION does not exist on npm"
           fi
 
       - name: Publish to npm
         if: steps.check_version.outputs.exists == 'false'
-        run: npm publish --access public
+        # Auth via OIDC trusted publishers (id-token: write) — do NOT set NODE_AUTH_TOKEN
+        run: npm publish --access public --provenance
 
       - name: Stop containers
         working-directory: src/server
@@ -100,21 +100,26 @@ jobs:
     needs: publish
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
 
       - name: Extract version from tag
         id: version
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/sdk-ts/v}
-          echo "version=$TAG_NAME" >> $GITHUB_OUTPUT
+          echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Generate Changelog
         run: |
-          echo "# TypeScript SDK v${{ steps.version.outputs.version }}" > ${{ github.workspace }}-CHANGELOG.txt
-          echo "" >> ${{ github.workspace }}-CHANGELOG.txt
-          echo "Published to npm as @acontext/acontext@${{ steps.version.outputs.version }}" >> ${{ github.workspace }}-CHANGELOG.txt
+          bash .github/scripts/generate-changelog.sh \
+            --tag-prefix "sdk-ts/v" \
+            --source-dir "src/client/acontext-ts" \
+            --display-name "TypeScript SDK" \
+            --output "${{ github.workspace }}-CHANGELOG.txt" \
+            --footer "Published to npm as @acontext/acontext@${{ steps.version.outputs.version }}"
 
       - name: Create Release
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
         with:
           body_path: ${{ github.workspace }}-CHANGELOG.txt

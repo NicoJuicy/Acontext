@@ -19,6 +19,10 @@ on:
         description: "Human-readable component name (e.g. Core)"
         required: true
         type: string
+      source_dir:
+        description: "Source directory for changelog scoping (e.g. src/server/core)"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -30,10 +34,12 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -41,7 +47,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf
         with:
           images: ghcr.io/memodb-io/${{ inputs.image_name }}
           tags: |
@@ -49,13 +55,13 @@ jobs:
             type=semver,pattern={{version}},match=${{ inputs.tag_prefix }}(\d+\.\d+\.\d+)$
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd
 
       - name: Build and Push Docker image
-        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294
         with:
           platforms: linux/amd64,linux/arm64
           context: ${{ inputs.context }}
@@ -67,19 +73,16 @@ jobs:
           cache-from: type=gha,scope=${{ inputs.image_name }}
           cache-to: type=gha,mode=max,scope=${{ inputs.image_name }}
 
-      - name: Extract version from tag
-        id: version
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/${{ inputs.tag_prefix }}}
-          echo "version=$TAG_NAME" >> $GITHUB_OUTPUT
-
       - name: Generate Changelog
         run: |
-          echo "# ${{ inputs.display_name }} v${{ steps.version.outputs.version }}" > ${{ github.workspace }}-CHANGELOG.txt
-          echo "" >> ${{ github.workspace }}-CHANGELOG.txt
-          echo "Published to https://github.com/memodb-io/Acontext/pkgs/container/${{ inputs.image_name }}" >> ${{ github.workspace }}-CHANGELOG.txt
+          bash .github/scripts/generate-changelog.sh \
+            --tag-prefix "${{ inputs.tag_prefix }}" \
+            --source-dir "${{ inputs.source_dir }}" \
+            --display-name "${{ inputs.display_name }}" \
+            --output "${{ github.workspace }}-CHANGELOG.txt" \
+            --footer "Published to https://github.com/memodb-io/Acontext/pkgs/container/${{ inputs.image_name }}"
 
       - name: Create Release
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
         with:
           body_path: ${{ github.workspace }}-CHANGELOG.txt
