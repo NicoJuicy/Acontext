@@ -62,14 +62,14 @@ def pack_previous_messages_section(
     task_descs = []
     for ti in task_ids:
         if ti is None:
-            task_descs.append("(no task linked)")
+            task_descs.append("(no task)")
             continue
         elif ti in mappings:
             task_descs.append(f"(append to task_{mappings[ti].order})")
         elif planning_task is not None and ti == planning_task.id:
             task_descs.append("(append to planning_section)")
         else:
-            task_descs.append("(no task linked)")
+            task_descs.append("(no task)")
     return "\n---\n".join(
         [
             f"{td}\n{m.to_string(tool_mappings, truncate_chars=256)}"

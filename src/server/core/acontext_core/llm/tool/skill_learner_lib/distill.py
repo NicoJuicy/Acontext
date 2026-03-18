@@ -34,12 +34,21 @@ DISTILL_SUCCESS_TOOL = ToolSchema(
                 "approach": {"type": "string"},
                 "key_decisions": {"type": "array", "items": {"type": "string"}},
                 "generalizable_pattern": {"type": "string"},
+                "applies_when": {
+                    "type": "string",
+                    "description": (
+                        "Specific conditions under which this approach works "
+                        "(website, tool, API, service, environment). "
+                        "Do not over-generalize."
+                    ),
+                },
             },
             "required": [
                 "task_goal",
                 "approach",
                 "key_decisions",
                 "generalizable_pattern",
+                "applies_when",
             ],
         },
     }
@@ -85,6 +94,14 @@ DISTILL_FAILURE_TOOL = ToolSchema(
                 "flawed_reasoning": {"type": "string"},
                 "what_should_have_been_done": {"type": "string"},
                 "prevention_principle": {"type": "string"},
+                "applies_when": {
+                    "type": "string",
+                    "description": (
+                        "Specific conditions under which this failure and lesson apply "
+                        "(website, tool, API, service, environment). "
+                        "Do not over-generalize."
+                    ),
+                },
             },
             "required": [
                 "task_goal",
@@ -92,6 +109,7 @@ DISTILL_FAILURE_TOOL = ToolSchema(
                 "flawed_reasoning",
                 "what_should_have_been_done",
                 "prevention_principle",
+                "applies_when",
             ],
         },
     }
@@ -126,7 +144,7 @@ def extract_distillation_result(llm_return: LLMResponse) -> Result[DistillationO
         )
 
     if func_name == "report_success_analysis":
-        required = ["task_goal", "approach", "key_decisions", "generalizable_pattern"]
+        required = ["task_goal", "approach", "key_decisions", "generalizable_pattern", "applies_when"]
         for field in required:
             if field not in args:
                 return Result.reject(f"Missing required field: {field}")
@@ -140,6 +158,7 @@ def extract_distillation_result(llm_return: LLMResponse) -> Result[DistillationO
         for decision in args["key_decisions"]:
             lines.append(f"  - {decision}")
         lines.append(f"**Generalizable Pattern:** {args['generalizable_pattern']}")
+        lines.append(f"**Applies When:** {args['applies_when']}")
         return Result.resolve(
             DistillationOutcome(
                 is_worth_learning=True,
@@ -172,6 +191,7 @@ def extract_distillation_result(llm_return: LLMResponse) -> Result[DistillationO
             "flawed_reasoning",
             "what_should_have_been_done",
             "prevention_principle",
+            "applies_when",
         ]
         for field in required:
             if field not in args:
@@ -184,6 +204,7 @@ def extract_distillation_result(llm_return: LLMResponse) -> Result[DistillationO
             f"**Flawed Reasoning:** {args['flawed_reasoning']}",
             f"**What Should Have Been Done:** {args['what_should_have_been_done']}",
             f"**Prevention Principle:** {args['prevention_principle']}",
+            f"**Applies When:** {args['applies_when']}",
         ]
         return Result.resolve(
             DistillationOutcome(

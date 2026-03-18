@@ -17,6 +17,7 @@ class SkillDistillationPrompt(BasePrompt):
 - approach: strategy that worked (2-3 sentences)
 - key_decisions: actions that mattered (list, 1 sentence each)
 - generalizable_pattern: reusable SOP for similar future tasks (2-3 sentences)
+- applies_when: the specific conditions under which this approach works (1-2 sentences). Include the website, tool, API, service, environment, or any other context that scopes this learning. Do NOT over-generalize — if the task was about flower-sunshine.com, say so.
 
 **Use `report_factual_content`** when the task is primarily about recording information — people, facts, preferences, entities, or domain knowledge — rather than a procedure:
 - task_goal: brief context of the conversation (1 sentence)
@@ -35,6 +36,7 @@ Pick the tool that best fits. Do NOT inflate simple factual content into fake pr
 - flawed_reasoning: the incorrect assumption or bad action (2-3 sentences)
 - what_should_have_been_done: the correct approach — most valuable field (2-3 sentences)
 - prevention_principle: general rule to prevent this failure class (1-2 sentences)
+- applies_when: the specific conditions under which this failure and lesson apply (1-2 sentences). Include the website, tool, API, service, or environment that scopes this learning. Do NOT over-generalize.
 
 Focus on actionable lessons, not blame.
 "The user" refers to the person sending messages (role: user). People mentioned within messages are third parties, not the user."""
@@ -64,9 +66,7 @@ Focus on actionable lessons, not blame.
         messages_section = "## Task Messages\n"
         tool_mappings = {}
         for m in task_messages:
-            messages_section += (
-                f"---\n{m.to_string(tool_mappings, truncate_chars=512)}\n"
-            )
+            messages_section += f"{m.to_string(tool_mappings, truncate_chars=512)}\n"
 
         skills_section = ""
         if skill_descriptions:

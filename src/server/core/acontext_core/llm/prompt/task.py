@@ -45,14 +45,15 @@ class TaskPrompt(BasePrompt):
 - Only link messages that directly contribute to a task (no random linking)
 
 ### 4. Record Progress
-- Use `append_task_progress` to record what the agent actually did at each step
-- Write concise, honest summaries of agent actions
-- Be specific with actual values and file paths:
-  - Good: "Created login component in src/Login.tsx"
-  - Good: "Encountered Python syntax error in routers.py, investigating"
-  - Good: "Navigated to https://github.com/trending"
-  - Bad: "Started working on the login feature"
-  - Bad: "Encountered errors"
+- Use `append_task_progress` to record **milestone-level** summaries, NOT per-step logs.
+- Aim for 1–3 progress entries per task. Combine related steps into one entry.
+- Keep each entry short — one sentence, max ~150 characters.
+- Be specific (file paths, URLs, values) but omit trivial details.
+- Examples:
+  - Good: "Created login component in src/Login.tsx with form validation"
+  - Good: "Fixed auth bug: token refresh was skipping expiry check in auth.py"
+  - Bad: "Started working on the login feature" (too vague)
+  - Bad: "Read the file, then found the function, then edited line 42, then saved" (too granular — combine into one milestone)
 
 ### 5. Submit User Preferences
 - Use `submit_user_preference` when messages reveal user preferences, personal info, or general constraints

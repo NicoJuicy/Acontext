@@ -93,6 +93,7 @@ class TestDistillSuccessToolSchema:
         assert "approach" in props
         assert "key_decisions" in props
         assert "generalizable_pattern" in props
+        assert "applies_when" in props
 
     def test_required_list(self):
         """Required list matches expected fields."""
@@ -101,6 +102,7 @@ class TestDistillSuccessToolSchema:
         assert "approach" in required
         assert "key_decisions" in required
         assert "generalizable_pattern" in required
+        assert "applies_when" in required
 
     def test_no_is_worth_learning(self):
         """is_worth_learning is not in success tool (moved to skip_learning)."""
@@ -148,6 +150,7 @@ class TestDistillFailureToolSchema:
         assert "flawed_reasoning" in props
         assert "what_should_have_been_done" in props
         assert "prevention_principle" in props
+        assert "applies_when" in props
 
     def test_required_list(self):
         """Required list matches expected fields."""
@@ -157,6 +160,7 @@ class TestDistillFailureToolSchema:
         assert "flawed_reasoning" in required
         assert "what_should_have_been_done" in required
         assert "prevention_principle" in required
+        assert "applies_when" in required
 
     def test_no_is_worth_learning(self):
         """is_worth_learning is not in failure tool (failures always worth learning)."""
@@ -207,6 +211,7 @@ class TestExtractDistillationResultSuccess:
                     "Added token refresh before retry",
                 ],
                 "generalizable_pattern": "Always check token expiry before retrying.",
+                "applies_when": "Working with the internal auth service that uses JWT refresh tokens.",
             },
         )
         result = extract_distillation_result(resp)
@@ -220,6 +225,8 @@ class TestExtractDistillationResultSuccess:
         assert "Inspected the auth middleware first" in outcome.distilled_text
         assert "Added token refresh before retry" in outcome.distilled_text
         assert "Always check token expiry" in outcome.distilled_text
+        assert "Applies When" in outcome.distilled_text
+        assert "internal auth service" in outcome.distilled_text
 
     def test_success_missing_required_field(self):
         """Success extraction rejects when required field is missing."""
@@ -280,6 +287,7 @@ class TestExtractDistillationResultFailure:
                 "flawed_reasoning": "Assumed rollback would work.",
                 "what_should_have_been_done": "Take backup before migration.",
                 "prevention_principle": "Always backup before destructive ops.",
+                "applies_when": "Using PostgreSQL with Alembic migrations in the staging environment.",
             },
         )
         result = extract_distillation_result(resp)
@@ -293,6 +301,8 @@ class TestExtractDistillationResultFailure:
         assert "Assumed rollback" in outcome.distilled_text
         assert "Take backup" in outcome.distilled_text
         assert "Always backup" in outcome.distilled_text
+        assert "Applies When" in outcome.distilled_text
+        assert "PostgreSQL with Alembic" in outcome.distilled_text
 
     def test_failure_missing_required_field(self):
         """Failure extraction rejects when required field is missing."""

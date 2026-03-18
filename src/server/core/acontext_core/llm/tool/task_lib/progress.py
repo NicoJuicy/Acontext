@@ -50,9 +50,9 @@ _append_task_progress_tool = (
         ToolSchema(
             function={
                 "name": "append_task_progress",
-                "description": """Record a progress step for a task. Use this to log what the agent actually did at each step.
-- Write concise, honest summaries of agent actions.
-- Be specific with actual values and file paths.
+                "description": """Record a milestone-level progress summary for a task. Aim for 1–3 entries per task, not one per step.
+- Combine related steps into a single entry. Keep it under ~150 characters.
+- Be specific (file paths, values) but omit trivial details.
 - Cannot append progress to 'success' or 'failed' tasks — update status to 'running' first.""",
                 "parameters": {
                     "type": "object",
@@ -63,7 +63,7 @@ _append_task_progress_tool = (
                         },
                         "progress": {
                             "type": "string",
-                            "description": "Concise, honest summary of what the agent did in this step. E.g. 'Created login component in src/Login.tsx'.",
+                            "description": "One-sentence milestone summary (~150 chars max). Combine related steps. E.g. 'Created login component in src/Login.tsx with form validation'.",
                         },
                     },
                     "required": ["task_order", "progress"],
