@@ -1,10 +1,10 @@
-import asyncio
 from ..base import Tool
 from ....schema.llm import ToolSchema
 from ....schema.result import Result
 from ....service.data import task as TD
 from ....constants import MetricTags
 from ....telemetry.capture_metrics import capture_increment
+from ....env import LOG
 from .ctx import TaskCtx
 
 
@@ -23,12 +23,13 @@ async def insert_task_handler(ctx: TaskCtx, llm_arguments: dict) -> Result[str]:
     t, eil = r.unpack()
     if eil:
         return r
-    asyncio.create_task(
-        capture_increment(
+    try:
+        await capture_increment(
             project_id=ctx.project_id,
             tag=MetricTags.new_task_created,
         )
-    )
+    except Exception:
+        LOG.error("metric_increment_failed", project_id=str(ctx.project_id), tag=MetricTags.new_task_created)
     return Result.resolve(f"Task {t.order} created")
 
 

@@ -30,7 +30,8 @@ class CoreConfig(BaseModel):
     logging_level: str = "INFO"
     session_message_session_lock_wait_seconds: int = 1
     session_message_buffer_default_ttl_seconds: int = 8
-    session_message_processing_timeout_seconds: int = 60
+    session_message_processing_timeout_seconds: int = 660
+    session_message_consumer_timeout: int = 600
     session_message_flush_max_retries: int = 60
     skill_learn_agent_max_iterations: int = 24
     skill_learn_lock_ttl_seconds: int = (
@@ -175,3 +176,9 @@ def post_validate_core_config_sanity(config: CoreConfig) -> None:
         assert (
             config.aws_agentcore_region is not None
         ), "aws_agentcore_region is required when sandbox_type is aws_agentcore"
+
+    assert config.session_message_processing_timeout_seconds >= config.session_message_consumer_timeout, (
+        f"session_message_processing_timeout_seconds ({config.session_message_processing_timeout_seconds}) "
+        f"must be >= session_message_consumer_timeout ({config.session_message_consumer_timeout}); "
+        f"otherwise the Redis lock expires before the handler finishes"
+    )

@@ -13,6 +13,19 @@ from ...telemetry.get_metrics import get_metrics
 from ...constants import ExcessMetricTags
 
 
+async def _try_rollback_to_failed(pending_message_ids: list) -> None:
+    try:
+        async with DB_CLIENT.get_session_context() as rollback_session:
+            await MD.update_message_status_to(
+                rollback_session, pending_message_ids, TaskStatus.FAILED
+            )
+    except BaseException:
+        LOG.error(
+            "session.pending_message_rollback_failed",
+            pending_message_ids=[str(mid) for mid in pending_message_ids],
+        )
+
+
 async def process_session_pending_message(
     project_config: ProjectConfig, project_id: asUUID, session_id: asUUID
 ) -> Result[None]:
@@ -56,6 +69,7 @@ async def process_session_pending_message(
             r = await MD.fetch_messages_data_by_ids(session, pending_message_ids)
             messages, eil = r.unpack()
             if eil:
+                await _try_rollback_to_failed(pending_message_ids)
                 return r
 
             r = await MD.fetch_previous_messages_by_datetime(
@@ -83,7 +97,9 @@ async def process_session_pending_message(
             messages_data,
             max_iterations=project_config.default_task_agent_max_iterations,
             previous_progress_num=project_config.default_task_agent_previous_progress_num,
-            learning_space_id=ls_session.learning_space_id if ls_session is not None else None,
+            learning_space_id=(
+                ls_session.learning_space_id if ls_session is not None else None
+            ),
             task_success_criteria=project_config.task_success_criteria,
             task_failure_criteria=project_config.task_failure_criteria,
         )
@@ -100,17 +116,15 @@ async def process_session_pending_message(
                 session, pending_message_ids, after_status
             )
         return r
-    except Exception as e:
+    except BaseException as e:
         if pending_message_ids is None:
-            raise e
+            raise
         LOG.error(
             "session.pending_message_exception",
-            error=str(e),
+            error=str(e) or "(no message)",
+            error_type=type(e).__name__,
             rollback_count=len(pending_message_ids),
         )
         wide["task_agent_outcome"] = "exception"
-        async with DB_CLIENT.get_session_context() as session:
-            await MD.update_message_status_to(
-                session, pending_message_ids, TaskStatus.FAILED
-            )
-        raise e
+        await _try_rollback_to_failed(pending_message_ids)
+        raise

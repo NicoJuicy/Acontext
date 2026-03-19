@@ -27,6 +27,7 @@ from .utils import (
         exchange_name=EX.session_message,
         routing_key=RK.session_message_insert,
         queue_name="session.message.insert.entry",
+        timeout=DEFAULT_CORE_CONFIG.session_message_consumer_timeout,
     )
 )
 async def insert_new_message(body: InsertNewMessage, message: Message):
