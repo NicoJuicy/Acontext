@@ -139,5 +139,6 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Sugar().Errorw("server shutdown", "err", err)
 	}
+
 	log.Sugar().Info("server exited")
 }

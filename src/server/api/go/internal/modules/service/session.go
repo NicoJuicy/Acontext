@@ -342,10 +342,15 @@ func (s *sessionService) StoreMessage(ctx context.Context, in StoreMessageInput)
 
 	uploadedAssets = append(uploadedAssets, *asset)
 
-	// Batch increment all asset references in a single DB round-trip
-	if err := s.assetReferenceRepo.BatchIncrementAssetRefs(ctx, in.ProjectID, uploadedAssets); err != nil {
-		return nil, fmt.Errorf("batch increment asset references: %w", err)
-	}
+	// Increment asset reference counts asynchronously to avoid blocking the response.
+	go func() {
+		bgCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if err := s.assetReferenceRepo.BatchIncrementAssetRefs(bgCtx, in.ProjectID, uploadedAssets); err != nil {
+			s.log.Error("async batch increment asset refs failed",
+				zap.String("project_id", in.ProjectID.String()), zap.Error(err))
+		}
+	}()
 
 	// Cache parts data in Redis after successful S3 upload
 	if s.redis != nil {

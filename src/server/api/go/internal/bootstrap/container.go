@@ -215,6 +215,7 @@ func BuildContainer() *do.Injector {
 			do.MustInvoke[*blob.S3Deps](i),
 		), nil
 	})
+
 	do.Provide(inj, func(i *do.Injector) (repo.SessionRepo, error) {
 		return repo.NewSessionRepo(
 			do.MustInvoke[*gorm.DB](i),
