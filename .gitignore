@@ -223,3 +223,6 @@ src/packages/openclaw/data/
 src/packages/claude-code/plugin/data/
 !src/packages/claude-code/plugin/data/.gitkeep
 src/packages/claude-code/node_modules/
+
+# E2E demo downloaded skills
+**/examples/learned_skills/
