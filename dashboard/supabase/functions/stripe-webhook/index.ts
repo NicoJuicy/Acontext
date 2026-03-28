@@ -33,16 +33,11 @@ async function sendPaymentFeishuNotification(
     // Fetch usage metrics for the org
     const { data: usage } = await supabase
       .from("organization_usage")
-      .select(
-        "current_task, current_skill, current_fast_skill_search, current_agentic_skill_search, current_storage"
-      )
+      .select("current_task, current_storage")
       .eq("organization_id", opts.organizationId)
       .maybeSingle();
 
     const task = usage?.current_task ?? 0;
-    const skill = usage?.current_skill ?? 0;
-    const fastSearch = usage?.current_fast_skill_search ?? 0;
-    const agenticSearch = usage?.current_agentic_skill_search ?? 0;
     const storageMB = usage?.current_storage
       ? (usage.current_storage / (1024 * 1024)).toFixed(2)
       : "0";
@@ -87,9 +82,7 @@ async function sendPaymentFeishuNotification(
               tag: "lark_md",
               content: [
                 "**📊 当月用量**",
-                `Task：${task}  |  Skill：${skill}`,
-                `Fast Search：${fastSearch}  |  Agentic Search：${agenticSearch}`,
-                `Storage：${storageMB} MB`,
+                `Task：${task}  |  Storage：${storageMB} MB`,
               ].join("\n"),
             },
           },
@@ -369,23 +362,6 @@ Deno.serve(async (req: Request) => {
           data
         );
 
-        // Async Feishu notification for new/upgraded subscription
-        const customerId = subscription.customer as string;
-        let customerEmail: string | undefined;
-        try {
-          const customer = await stripe.customers.retrieve(customerId);
-          if (customer && !customer.deleted) {
-            customerEmail = customer.email ?? undefined;
-          }
-        } catch (_) { /* best-effort */ }
-
-        sendPaymentFeishuNotification(supabase, {
-          type: event.type === "customer.subscription.created" ? "new_subscription" : "renewal",
-          organizationId,
-          plan: validPlan,
-          customerEmail,
-        });
-
         break;
       }
 
@@ -663,8 +639,9 @@ Deno.serve(async (req: Request) => {
         } catch (_) { /* best-effort */ }
 
         const plan = await getPlanFromSubscription(subscription);
+        const isFirstPayment = invoice.billing_reason === "subscription_create";
         sendPaymentFeishuNotification(supabase, {
-          type: "renewal",
+          type: isFirstPayment ? "new_subscription" : "renewal",
           organizationId,
           plan,
           amount: invoice.amount_paid,
