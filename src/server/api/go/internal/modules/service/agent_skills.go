@@ -83,11 +83,11 @@ type SkillFileInfo struct {
 // ListFilesOutput contains skill metadata and the list of files with artifacts.
 // Combines skill name/description with artifact objects to avoid N+1 queries.
 type ListFilesOutput struct {
-	Name        string             // Skill name (sanitized, used for sandbox path)
-	Description string             // Skill description
-	DiskID      uuid.UUID          // Disk ID for accessing artifacts
-	Files       []SkillFileInfo    // File list with S3 keys (for backward compatibility)
-	Artifacts   []*model.Artifact  // Full artifact objects (for download zip)
+	Name        string            // Skill name (sanitized, used for sandbox path)
+	Description string            // Skill description
+	DiskID      uuid.UUID         // Disk ID for accessing artifacts
+	Files       []SkillFileInfo   // File list with S3 keys (for backward compatibility)
+	Artifacts   []*model.Artifact // Full artifact objects (for download zip)
 }
 
 // splitSkillPath converts a skill-relative file path into Artifact (Path, Filename) tuple.

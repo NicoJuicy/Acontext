@@ -10,6 +10,257 @@
     "url" : "/api/v1"
   } ],
   "paths" : {
+    "/admin/v1/project" : {
+      "post" : {
+        "description" : "Create a new project with a randomly generated secret key",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/handler.CreateProjectReq"
+              }
+            }
+          },
+          "description" : "Project configuration",
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/_admin_v1_project_post_200_response"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Create a new project",
+        "tags" : [ "admin" ],
+        "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/admin/v1/project/{project_id}" : {
+      "delete" : {
+        "description" : "Delete a project by ID",
+        "parameters" : [ {
+          "description" : "Project ID",
+          "in" : "path",
+          "name" : "project_id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Delete a project",
+        "tags" : [ "admin" ]
+      }
+    },
+    "/admin/v1/project/{project_id}/metrics" : {
+      "get" : {
+        "description" : "Get metrics for a project by querying Jaeger API with project_id filter",
+        "parameters" : [ {
+          "description" : "Project ID",
+          "in" : "path",
+          "name" : "project_id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Analyze project metrics",
+        "tags" : [ "admin" ]
+      }
+    },
+    "/admin/v1/project/{project_id}/secret_key" : {
+      "put" : {
+        "description" : "Generate a new secret key for a non-encrypted project. Blocked for encrypted projects.",
+        "parameters" : [ {
+          "description" : "Project ID",
+          "in" : "path",
+          "name" : "project_id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/_admin_v1_project__project_id__secret_key_put_200_response"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Rotate project secret key (admin)",
+        "tags" : [ "admin" ]
+      }
+    },
+    "/admin/v1/project/{project_id}/statistics" : {
+      "get" : {
+        "description" : "Get statistics for a project",
+        "parameters" : [ {
+          "description" : "Project ID",
+          "in" : "path",
+          "name" : "project_id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Analyze project statistics",
+        "tags" : [ "admin" ]
+      }
+    },
+    "/admin/v1/project/{project_id}/usages" : {
+      "get" : {
+        "description" : "Get usage analytics for a project",
+        "parameters" : [ {
+          "description" : "Project ID",
+          "in" : "path",
+          "name" : "project_id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "description" : "Number of days to analyze (default: 30)",
+          "in" : "query",
+          "name" : "interval_days",
+          "schema" : {
+            "default" : 30,
+            "type" : "integer"
+          }
+        }, {
+          "description" : "Comma-separated list of fields to fetch (empty = all)",
+          "in" : "query",
+          "name" : "fields",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Analyze project usages",
+        "tags" : [ "admin" ]
+      }
+    },
     "/agent_skills" : {
       "get" : {
         "description" : "List all agent skills under a project",
@@ -247,6 +498,47 @@
           "source" : "import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Download skill to sandbox\nconst result = await client.skills.downloadToSandbox('skill-uuid', {\n  sandboxId: 'sandbox-uuid'\n});\nconsole.log(`Success: ${result.success}`);\nconsole.log(`Skill installed at: ${result.dir_path}`);\n"
         } ],
         "x-codegen-request-body-name" : "request"
+      }
+    },
+    "/agent_skills/{id}/download_zip" : {
+      "get" : {
+        "description" : "Download all files from an agent skill as a ZIP archive. Files are streamed directly with their relative paths preserved.",
+        "parameters" : [ {
+          "description" : "Agent skill UUID",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/zip" : {
+                "schema" : {
+                  "format" : "binary",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "ZIP file containing all skill files"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ],
+        "summary" : "Download skill as ZIP file",
+        "tags" : [ "agent_skills" ],
+        "x-code-samples" : [ {
+          "label" : "Python",
+          "lang" : "python",
+          "source" : "from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Download skill as ZIP file\nwith open('my_skill.zip', 'wb') as f:\n    content = client.skills.download_zip('skill-uuid')\n    f.write(content)\nprint('Skill downloaded as ZIP')\n"
+        }, {
+          "label" : "JavaScript",
+          "lang" : "javascript",
+          "source" : "import { AcontextClient } from '@acontext/acontext';\nimport fs from 'fs';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Download skill as ZIP file\nconst zipContent = await client.skills.downloadZip('skill-uuid');\nfs.writeFileSync('my_skill.zip', zipContent);\nconsole.log('Skill downloaded as ZIP');\n"
+        } ]
       }
     },
     "/agent_skills/{id}/file" : {
@@ -671,6 +963,40 @@
           "source" : "import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Update artifact metadata\nconst artifact = await client.disks.updateArtifact('disk-uuid', {\n  filePath: '/documents/report.pdf',\n  meta: { category: 'updated', reviewed: true, version: 2 }\n});\nconsole.log(`Updated artifact: ${artifact.artifact.id}`);\n"
         } ],
         "x-codegen-request-body-name" : "request"
+      }
+    },
+    "/disk/{disk_id}/artifact/download" : {
+      "get" : {
+        "description" : "Download raw artifact file content. Decrypts content if encryption is enabled.",
+        "parameters" : [ {
+          "description" : "Disk ID",
+          "in" : "path",
+          "name" : "disk_id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "description" : "File path including filename",
+          "in" : "query",
+          "name" : "file_path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : { },
+            "description" : "File content"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ],
+        "summary" : "Download artifact content",
+        "tags" : [ "artifact" ]
       }
     },
     "/disk/{disk_id}/artifact/download_to_sandbox" : {
@@ -1495,6 +1821,141 @@
         } ]
       }
     },
+    "/material/{token}" : {
+      "get" : {
+        "description" : "Download file content via a material token. No authentication required. Returns the file content with appropriate Content-Type header.",
+        "parameters" : [ {
+          "description" : "Material token (64-char hex)",
+          "in" : "path",
+          "name" : "token",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : { },
+            "description" : "File content"
+          },
+          "404" : {
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Token not found or expired"
+          }
+        },
+        "summary" : "Serve material content",
+        "tags" : [ "material" ]
+      }
+    },
+    "/metrics/v1" : {
+      "post" : {
+        "description" : "Create storage metrics, fetch metrics, push to external API, and store quota status in Redis",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "429" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Too Many Requests"
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Push metrics to external API",
+        "tags" : [ "metrics" ]
+      }
+    },
+    "/metrics/v1/:project_id/quota" : {
+      "get" : {
+        "description" : "Get quota information for a project based on path and method",
+        "parameters" : [ {
+          "description" : "Project ID",
+          "in" : "path",
+          "name" : "project_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Path",
+          "in" : "query",
+          "name" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Method",
+          "in" : "query",
+          "name" : "method",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Get project quota",
+        "tags" : [ "metrics" ]
+      }
+    },
     "/project/configs" : {
       "get" : {
         "description" : "Returns the project-level configuration (stored under the \"project_config\" key).",
@@ -1558,6 +2019,90 @@
         "summary" : "Patch project configs",
         "tags" : [ "Project" ],
         "x-codegen-request-body-name" : "body"
+      }
+    },
+    "/project/decrypt" : {
+      "post" : {
+        "description" : "Decrypts all existing S3 data for the project and disables encryption for future writes.",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ],
+        "summary" : "Disable project encryption",
+        "tags" : [ "Project" ]
+      }
+    },
+    "/project/encrypt" : {
+      "post" : {
+        "description" : "Encrypts all existing S3 data for the project and enables encryption for future writes.",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "500" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/serializer.Response"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ],
+        "summary" : "Enable project encryption",
+        "tags" : [ "Project" ]
       }
     },
     "/sandbox" : {
@@ -1903,6 +2448,40 @@
           "lang" : "javascript",
           "source" : "import { AcontextClient } from '@acontext/acontext';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Delete a session\nawait client.sessions.delete('session-uuid');\n"
         } ]
+      }
+    },
+    "/session/{session_id}/asset/download" : {
+      "get" : {
+        "description" : "Download a session asset (file attachment) by its S3 key. Decrypts if encryption is enabled.",
+        "parameters" : [ {
+          "description" : "Session ID",
+          "in" : "path",
+          "name" : "session_id",
+          "required" : true,
+          "schema" : {
+            "format" : "uuid",
+            "type" : "string"
+          }
+        }, {
+          "description" : "S3 key of the asset",
+          "in" : "query",
+          "name" : "s3_key",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : { },
+            "description" : "Asset content"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ],
+        "summary" : "Download session asset",
+        "tags" : [ "session" ]
       }
     },
     "/session/{session_id}/configs" : {
@@ -2940,6 +3519,15 @@
         },
         "type" : "object"
       },
+      "handler.CreateProjectReq" : {
+        "properties" : {
+          "configs" : {
+            "additionalProperties" : true,
+            "type" : "object"
+          }
+        },
+        "type" : "object"
+      },
       "handler.CreateSessionReq" : {
         "properties" : {
           "configs" : {
@@ -3693,6 +4281,17 @@
         },
         "type" : "object"
       },
+      "service.CreateProjectOutput" : {
+        "properties" : {
+          "project_id" : {
+            "type" : "string"
+          },
+          "secret_key" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
       "service.GetFileOutput" : {
         "properties" : {
           "content" : {
@@ -3709,7 +4308,7 @@
             "type" : "string"
           },
           "url" : {
-            "description" : "Present if file is not text-based or not parseable",
+            "description" : "Material URL for binary files (works for both encrypted and non-encrypted)",
             "type" : "string"
           }
         },
@@ -3869,6 +4468,38 @@
           }
         },
         "type" : "object"
+      },
+      "service.UpdateSecretKeyOutput" : {
+        "properties" : {
+          "secret_key" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "_admin_v1_project_post_200_response" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/serializer.Response"
+        }, {
+          "properties" : {
+            "data" : {
+              "$ref" : "#/components/schemas/service.CreateProjectOutput"
+            }
+          },
+          "type" : "object"
+        } ]
+      },
+      "_admin_v1_project__project_id__secret_key_put_200_response" : {
+        "allOf" : [ {
+          "$ref" : "#/components/schemas/serializer.Response"
+        }, {
+          "properties" : {
+            "data" : {
+              "$ref" : "#/components/schemas/service.UpdateSecretKeyOutput"
+            }
+          },
+          "type" : "object"
+        } ]
       },
       "_agent_skills_get_200_response" : {
         "allOf" : [ {

@@ -13,8 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/memodb-io/Acontext/internal/config"
 	"github.com/memodb-io/Acontext/internal/infra/blob"
-	"github.com/memodb-io/Acontext/internal/middleware"
 	"github.com/memodb-io/Acontext/internal/infra/httpclient"
+	"github.com/memodb-io/Acontext/internal/middleware"
 	"github.com/memodb-io/Acontext/internal/modules/model"
 	"github.com/memodb-io/Acontext/internal/modules/repo"
 	"github.com/memodb-io/Acontext/internal/modules/serializer"
@@ -314,7 +314,7 @@ type DownloadArtifactReq struct {
 //	@Description	Download raw artifact file content. Decrypts content if encryption is enabled.
 //	@Tags			artifact
 //	@Produce		octet-stream
-//	@Param			disk_id		path	string	true	"Disk ID"			Format(uuid)
+//	@Param			disk_id		path	string	true	"Disk ID"	Format(uuid)
 //	@Param			file_path	query	string	true	"File path including filename"
 //	@Security		BearerAuth
 //	@Success		200	"File content"

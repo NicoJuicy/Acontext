@@ -15,13 +15,13 @@ import (
 
 const (
 	// Redis key prefixes for the asset reference buffer.
-	assetRefBufPrefix     = "assetref:buf:"     // Hash: sha256 → delta count
-	assetRefMetaPrefix    = "assetref:meta:"     // String: JSON of model.Asset
-	assetRefProjectsKey   = "assetref:projects"  // Set: project IDs with pending deltas
+	assetRefBufPrefix     = "assetref:buf:"       // Hash: sha256 → delta count
+	assetRefMetaPrefix    = "assetref:meta:"      // String: JSON of model.Asset
+	assetRefProjectsKey   = "assetref:projects"   // Set: project IDs with pending deltas
 	assetRefFlushLockKey  = "assetref:flush:lock" // Distributed flush lock
 	assetRefMetaTTL       = time.Hour             // Metadata key TTL
 	assetRefFlushLockTTL  = 3 * time.Second       // Flush lock TTL
-	assetRefFlushInterval = time.Second            // Flush ticker interval
+	assetRefFlushInterval = time.Second           // Flush ticker interval
 )
 
 // AssetRefBuffer buffers asset reference increments in Redis and flushes
@@ -34,12 +34,12 @@ type AssetRefBuffer interface {
 }
 
 type assetRefBuffer struct {
-	redis    *redis.Client
-	repo     AssetReferenceRepo
-	log      *zap.Logger
-	stop     chan struct{}
-	done     chan struct{}
-	stopped  atomic.Bool
+	redis   *redis.Client
+	repo    AssetReferenceRepo
+	log     *zap.Logger
+	stop    chan struct{}
+	done    chan struct{}
+	stopped atomic.Bool
 }
 
 // drainScript atomically reads all fields from a hash and deletes it.

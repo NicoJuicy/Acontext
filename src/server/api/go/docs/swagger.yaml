@@ -70,6 +70,12 @@ definitions:
         example: alice@acontext.io
         type: string
     type: object
+  handler.CreateProjectReq:
+    properties:
+      configs:
+        additionalProperties: true
+        type: object
+    type: object
   handler.CreateSessionReq:
     properties:
       configs:
@@ -590,6 +596,13 @@ definitions:
       user_id:
         type: string
     type: object
+  service.CreateProjectOutput:
+    properties:
+      project_id:
+        type: string
+      secret_key:
+        type: string
+    type: object
   service.GetFileOutput:
     properties:
       content:
@@ -601,7 +614,7 @@ definitions:
       path:
         type: string
       url:
-        description: Present if file is not text-based or not parseable
+        description: Material URL for binary files (works for both encrypted and non-encrypted)
         type: string
     type: object
   service.GetSandboxLogsOutput:
@@ -704,12 +717,191 @@ definitions:
       url:
         type: string
     type: object
+  service.UpdateSecretKeyOutput:
+    properties:
+      secret_key:
+        type: string
+    type: object
 info:
   contact: {}
   description: API for Acontext.
   title: Acontext API
   version: "1.0"
 paths:
+  /admin/v1/project:
+    post:
+      consumes:
+      - application/json
+      description: Create a new project with a randomly generated secret key
+      parameters:
+      - description: Project configuration
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/handler.CreateProjectReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/serializer.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.CreateProjectOutput'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: Create a new project
+      tags:
+      - admin
+  /admin/v1/project/{project_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a project by ID
+      parameters:
+      - description: Project ID
+        format: uuid
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: Delete a project
+      tags:
+      - admin
+  /admin/v1/project/{project_id}/metrics:
+    get:
+      consumes:
+      - application/json
+      description: Get metrics for a project by querying Jaeger API with project_id
+        filter
+      parameters:
+      - description: Project ID
+        format: uuid
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: Analyze project metrics
+      tags:
+      - admin
+  /admin/v1/project/{project_id}/secret_key:
+    put:
+      description: Generate a new secret key for a non-encrypted project. Blocked
+        for encrypted projects.
+      parameters:
+      - description: Project ID
+        format: uuid
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/serializer.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/service.UpdateSecretKeyOutput'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: Rotate project secret key (admin)
+      tags:
+      - admin
+  /admin/v1/project/{project_id}/statistics:
+    get:
+      consumes:
+      - application/json
+      description: Get statistics for a project
+      parameters:
+      - description: Project ID
+        format: uuid
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: Analyze project statistics
+      tags:
+      - admin
+  /admin/v1/project/{project_id}/usages:
+    get:
+      consumes:
+      - application/json
+      description: Get usage analytics for a project
+      parameters:
+      - description: Project ID
+        format: uuid
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - default: 30
+        description: 'Number of days to analyze (default: 30)'
+        in: query
+        name: interval_days
+        type: integer
+      - description: Comma-separated list of fields to fetch (empty = all)
+        in: query
+        name: fields
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: Analyze project usages
+      tags:
+      - admin
   /agent_skills:
     get:
       consumes:
@@ -1023,6 +1215,55 @@ paths:
           });
           console.log(`Success: ${result.success}`);
           console.log(`Skill installed at: ${result.dir_path}`);
+  /agent_skills/{id}/download_zip:
+    get:
+      consumes:
+      - application/json
+      description: Download all files from an agent skill as a ZIP archive. Files
+        are streamed directly with their relative paths preserved.
+      parameters:
+      - description: Agent skill UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/zip
+      responses:
+        "200":
+          description: ZIP file containing all skill files
+          schema:
+            type: file
+      security:
+      - BearerAuth: []
+      summary: Download skill as ZIP file
+      tags:
+      - agent_skills
+      x-code-samples:
+      - label: Python
+        lang: python
+        source: |
+          from acontext import AcontextClient
+
+          client = AcontextClient(api_key='sk_project_token')
+
+          # Download skill as ZIP file
+          with open('my_skill.zip', 'wb') as f:
+              content = client.skills.download_zip('skill-uuid')
+              f.write(content)
+          print('Skill downloaded as ZIP')
+      - label: JavaScript
+        lang: javascript
+        source: |
+          import { AcontextClient } from '@acontext/acontext';
+          import fs from 'fs';
+
+          const client = new AcontextClient({ apiKey: 'sk_project_token' });
+
+          // Download skill as ZIP file
+          const zipContent = await client.skills.downloadZip('skill-uuid');
+          fs.writeFileSync('my_skill.zip', zipContent);
+          console.log('Skill downloaded as ZIP');
   /agent_skills/{id}/file:
     get:
       consumes:
@@ -1571,6 +1812,32 @@ paths:
             meta: { category: 'updated', reviewed: true, version: 2 }
           });
           console.log(`Updated artifact: ${artifact.artifact.id}`);
+  /disk/{disk_id}/artifact/download:
+    get:
+      description: Download raw artifact file content. Decrypts content if encryption
+        is enabled.
+      parameters:
+      - description: Disk ID
+        format: uuid
+        in: path
+        name: disk_id
+        required: true
+        type: string
+      - description: File path including filename
+        in: query
+        name: file_path
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: File content
+      security:
+      - BearerAuth: []
+      summary: Download artifact content
+      tags:
+      - artifact
   /disk/{disk_id}/artifact/download_to_sandbox:
     post:
       consumes:
@@ -2542,6 +2809,91 @@ paths:
             spaceId: 'space-uuid',
             skillId: 'skill-uuid'
           });
+  /material/{token}:
+    get:
+      description: Download file content via a material token. No authentication required.
+        Returns the file content with appropriate Content-Type header.
+      parameters:
+      - description: Material token (64-char hex)
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: File content
+        "404":
+          description: Token not found or expired
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: Serve material content
+      tags:
+      - material
+  /metrics/v1:
+    post:
+      consumes:
+      - application/json
+      description: Create storage metrics, fetch metrics, push to external API, and
+        store quota status in Redis
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: Push metrics to external API
+      tags:
+      - metrics
+  /metrics/v1/:project_id/quota:
+    get:
+      consumes:
+      - application/json
+      description: Get quota information for a project based on path and method
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Path
+        in: query
+        name: path
+        required: true
+        type: string
+      - description: Method
+        in: query
+        name: method
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      summary: Get project quota
+      tags:
+      - metrics
   /project/configs:
     get:
       description: Returns the project-level configuration (stored under the "project_config"
@@ -2597,6 +2949,54 @@ paths:
       security:
       - BearerAuth: []
       summary: Patch project configs
+      tags:
+      - Project
+  /project/decrypt:
+    post:
+      description: Decrypts all existing S3 data for the project and disables encryption
+        for future writes.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      security:
+      - BearerAuth: []
+      summary: Disable project encryption
+      tags:
+      - Project
+  /project/encrypt:
+    post:
+      description: Encrypts all existing S3 data for the project and enables encryption
+        for future writes.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/serializer.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/serializer.Response'
+      security:
+      - BearerAuth: []
+      summary: Enable project encryption
       tags:
       - Project
   /sandbox:
@@ -3044,6 +3444,32 @@ paths:
 
           // Delete a session
           await client.sessions.delete('session-uuid');
+  /session/{session_id}/asset/download:
+    get:
+      description: Download a session asset (file attachment) by its S3 key. Decrypts
+        if encryption is enabled.
+      parameters:
+      - description: Session ID
+        format: uuid
+        in: path
+        name: session_id
+        required: true
+        type: string
+      - description: S3 key of the asset
+        in: query
+        name: s3_key
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: Asset content
+      security:
+      - BearerAuth: []
+      summary: Download session asset
+      tags:
+      - session
   /session/{session_id}/configs:
     get:
       consumes:

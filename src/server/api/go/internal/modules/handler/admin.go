@@ -43,7 +43,6 @@ func NewAdminHandler(projectSvc service.ProjectService, projectRepo repo.Project
 	}
 }
 
-
 type CreateProjectReq struct {
 	Configs map[string]interface{} `json:"configs,omitempty"`
 }
@@ -337,4 +336,3 @@ func (h *AdminHandler) RotateProjectSecretKey(c *gin.Context) {
 
 	c.JSON(http.StatusOK, serializer.Response{Data: output})
 }
-

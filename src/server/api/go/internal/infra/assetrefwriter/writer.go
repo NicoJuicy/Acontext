@@ -17,9 +17,9 @@ import (
 
 const (
 	// Redis key prefixes
-	pendingKeyPrefix = "assetref:pending:"  // Hash: field=sha256, value=count
+	pendingKeyPrefix = "assetref:pending:" // Hash: field=sha256, value=count
 	dirtySetKey      = "assetref:dirty_projects"
-	metaKeyPrefix    = "assetref:meta:"     // String: JSON-encoded Asset
+	metaKeyPrefix    = "assetref:meta:" // String: JSON-encoded Asset
 
 	// Default TTL for pending and meta keys (safety net)
 	defaultKeyTTL = 24 * time.Hour

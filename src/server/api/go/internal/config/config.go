@@ -52,8 +52,8 @@ type MQExchangeName struct {
 }
 
 type MQRoutingKey struct {
-	SessionMessageInsert   string
-	LearningSkillDistill   string
+	SessionMessageInsert string
+	LearningSkillDistill string
 }
 type MQCfg struct {
 	URL          string
@@ -155,7 +155,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("metrics.pushLastRequestKey", "push_metrics:last_request_time")
 	v.SetDefault("telemetry.otlpEndpoint", "http://127.0.0.1:4317")
 	v.SetDefault("telemetry.enabled", true)
-	v.SetDefault("telemetry.sampleRatio", 1.0)            // Default 100% sampling
+	v.SetDefault("telemetry.sampleRatio", 1.0) // Default 100% sampling
 	v.SetDefault("supabase.projectReference", "")
 	v.SetDefault("supabase.apiKey", "")
 	v.SetDefault("supabase.authURL", "")
