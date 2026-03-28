@@ -223,3 +223,23 @@ class AsyncSkillsAPI:
             json_data=payload,
         )
         return DownloadSkillToSandboxResp.model_validate(data)
+
+    async def download_zip(self, skill_id: str) -> bytes:
+        """Download all files from a skill as a ZIP archive.
+
+        Args:
+            skill_id: The UUID of the skill to download.
+
+        Returns:
+            bytes: ZIP file content containing all skill files with relative paths preserved.
+
+        Example:
+        ```python
+            # Download skill as ZIP file
+            zip_content = await client.skills.download_zip('skill-uuid')
+            with open('my_skill.zip', 'wb') as f:
+                f.write(zip_content)
+        ```
+        """
+        # Use request_binary to get raw bytes without UTF-8 decoding
+        return await self._requester.request_binary("GET", f"/agent_skills/{skill_id}/download_zip")

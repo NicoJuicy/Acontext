@@ -204,5 +204,23 @@ export class SkillsAPI {
 
     return DownloadSkillToSandboxRespSchema.parse(data);
   }
+
+  /**
+   * Download all files from a skill as a ZIP archive.
+   *
+   * @param skillId - The UUID of the skill to download
+   * @returns Buffer containing the ZIP file with all skill files and relative paths preserved
+   *
+   * @example
+   * ```typescript
+   * // Download skill as ZIP file
+   * const zipContent = await client.skills.downloadZip('skill-uuid');
+   * fs.writeFileSync('my_skill.zip', zipContent);
+   * ```
+   */
+  async downloadZip(skillId: string): Promise<Buffer> {
+    // Use requestBinary to get raw binary data via arrayBuffer, avoiding UTF-8 corruption
+    return this.requester.requestBinary('GET', `/agent_skills/${skillId}/download_zip`);
+  }
 }
 

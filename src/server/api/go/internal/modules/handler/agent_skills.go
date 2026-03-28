@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"archive/zip"
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -26,6 +29,37 @@ type AgentSkillsHandler struct {
 
 func NewAgentSkillsHandler(s service.AgentSkillsService, userSvc service.UserService, coreClient *httpclient.CoreClient) *AgentSkillsHandler {
 	return &AgentSkillsHandler{svc: s, userSvc: userSvc, coreClient: coreClient}
+}
+
+// splitSkillPath converts a skill-relative file path into Artifact (Path, Filename) tuple.
+func splitSkillPath(relativePath string) (dir, filename string) {
+	idx := strings.LastIndex(relativePath, "/")
+	if idx == -1 {
+		return "/", relativePath
+	}
+	return "/" + relativePath[:idx] + "/", relativePath[idx+1:]
+}
+
+// joinSkillPath reconstructs a skill-relative file path from Artifact (Path, Filename).
+func joinSkillPath(artifactPath, filename string) string {
+	if artifactPath == "/" {
+		return filename
+	}
+	return strings.TrimPrefix(artifactPath, "/") + filename
+}
+
+// toASCII converts a string to ASCII by replacing non-ASCII characters with underscores.
+// Used for Content-Disposition ASCII fallback filename.
+func toASCII(s string) string {
+	var result strings.Builder
+	for _, r := range s {
+		if r < 128 && r != '"' && r != '\\' {
+			result.WriteRune(r)
+		} else {
+			result.WriteRune('_')
+		}
+	}
+	return result.String()
 }
 
 type CreateAgentSkillsReq struct {
@@ -409,4 +443,141 @@ func (h *AgentSkillsHandler) DownloadToSandbox(c *gin.Context) {
 		Name:        listResult.Name,
 		Description: listResult.Description,
 	}})
+}
+
+// DownloadZip godoc
+//
+//	@Summary		Download skill as ZIP file
+//	@Description	Download all files from an agent skill as a ZIP archive. Files are streamed directly with their relative paths preserved.
+//	@Tags			agent_skills
+//	@Accept			json
+//	@Produce		application/zip
+//	@Param			id	path	string	true	"Agent skill UUID"
+//	@Security		BearerAuth
+//	@Success		200	{file}	binary	"ZIP file containing all skill files"
+//	@Router			/agent_skills/{id}/download_zip [get]
+//	@x-code-samples	[{"lang":"python","source":"from acontext import AcontextClient\n\nclient = AcontextClient(api_key='sk_project_token')\n\n# Download skill as ZIP file\nwith open('my_skill.zip', 'wb') as f:\n    content = client.skills.download_zip('skill-uuid')\n    f.write(content)\nprint('Skill downloaded as ZIP')\n","label":"Python"},{"lang":"javascript","source":"import { AcontextClient } from '@acontext/acontext';\nimport fs from 'fs';\n\nconst client = new AcontextClient({ apiKey: 'sk_project_token' });\n\n// Download skill as ZIP file\nconst zipContent = await client.skills.downloadZip('skill-uuid');\nfs.writeFileSync('my_skill.zip', zipContent);\nconsole.log('Skill downloaded as ZIP');\n","label":"JavaScript"}]
+func (h *AgentSkillsHandler) DownloadZip(c *gin.Context) {
+	project, ok := c.MustGet("project").(*model.Project)
+	if !ok {
+		c.JSON(http.StatusBadRequest, serializer.ParamErr("", errors.New("project not found")))
+		return
+	}
+
+	// Parse skill ID from path
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, serializer.ParamErr("invalid skill id", err))
+		return
+	}
+
+	// Get skill metadata + file list
+	listResult, err := h.svc.ListFiles(c.Request.Context(), project.ID, id)
+	if err != nil {
+		// Issue 6: Don't leak internal error details
+		c.JSON(http.StatusNotFound, serializer.Err(http.StatusNotFound, "skill not found", nil))
+		return
+	}
+
+	// Issue 4: Add size guard (50MB total, 200 files max)
+	const maxTotalSize = 50 * 1024 * 1024 // 50MB
+	const maxFileCount = 200
+	if len(listResult.Files) > maxFileCount {
+		c.JSON(http.StatusRequestEntityTooLarge, serializer.Err(http.StatusRequestEntityTooLarge,
+			fmt.Sprintf("skill has too many files (%d), maximum is %d", len(listResult.Files), maxFileCount), nil))
+		return
+	}
+
+	// Calculate total size from artifact metadata (no N+1 queries - use artifacts from ListFiles)
+	var totalSize int64
+	artifacts := listResult.Artifacts
+	for _, artifact := range artifacts {
+		assetData := artifact.AssetMeta.Data()
+		totalSize += assetData.SizeB
+	}
+
+	if totalSize > maxTotalSize {
+		c.JSON(http.StatusRequestEntityTooLarge, serializer.Err(http.StatusRequestEntityTooLarge,
+			fmt.Sprintf("skill total size (%d bytes) exceeds maximum (%d bytes)", totalSize, maxTotalSize), nil))
+		return
+	}
+
+	if len(artifacts) == 0 {
+		// No files to download, return empty ZIP
+		c.Header("Content-Type", "application/zip")
+		// RFC 5987: Use QueryEscape (encodes /, @, :) + ASCII fallback
+		asciiName := toASCII(listResult.Name)
+		escapedName := url.QueryEscape(listResult.Name)
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"; filename*=UTF-8''%s.zip", asciiName, escapedName))
+		buf := new(bytes.Buffer)
+		zipWriter := zip.NewWriter(buf)
+		zipWriter.Close()
+		c.Data(http.StatusOK, "application/zip", buf.Bytes())
+		return
+	}
+
+	// Download all files in parallel using artifact objects (Issue 1: use DownloadRawContent pattern)
+	type fileData struct {
+		path    string
+		content []byte
+	}
+	fileContents := make([]*fileData, len(artifacts))
+
+	g, gctx := errgroup.WithContext(c.Request.Context())
+	g.SetLimit(10)
+
+	for i, artifact := range artifacts {
+		i, artifact := i, artifact
+		g.Go(func() error {
+			// Issue 1: Use DownloadRawContent instead of DownloadByS3Key
+			content, _, err := h.svc.DownloadRawContent(gctx, artifact, middleware.GetUserKEKIfEncrypted(c))
+			if err != nil {
+				// Reconstruct path from artifact
+				skillPath := joinSkillPath(artifact.Path, artifact.Filename)
+				return fmt.Errorf("failed to download file %s: %w", skillPath, err)
+			}
+			fileContents[i] = &fileData{
+				path:    joinSkillPath(artifact.Path, artifact.Filename),
+				content: content,
+			}
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "failed to download files", nil))
+		return
+	}
+
+	// Create ZIP in memory
+	buf := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(buf)
+
+	for _, fd := range fileContents {
+		if fd == nil {
+			continue
+		}
+		w, err := zipWriter.Create(fd.path)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "failed to create zip entry", err))
+			return
+		}
+		if _, err := w.Write(fd.content); err != nil {
+			c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "failed to write zip entry", err))
+			return
+		}
+	}
+
+	if err := zipWriter.Close(); err != nil {
+		c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "failed to close zip", err))
+		return
+	}
+
+	// Stream ZIP to client
+	c.Header("Content-Type", "application/zip")
+	// RFC 5987: Use QueryEscape (encodes /, @, :) + ASCII fallback
+	asciiName := toASCII(listResult.Name)
+	escapedName := url.QueryEscape(listResult.Name)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"; filename*=UTF-8''%s.zip", asciiName, escapedName))
+	c.Data(http.StatusOK, "application/zip", buf.Bytes())
 }
