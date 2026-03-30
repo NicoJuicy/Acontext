@@ -19,6 +19,7 @@ import (
 	"github.com/memodb-io/Acontext/internal/modules/serializer"
 	"github.com/memodb-io/Acontext/internal/modules/service"
 	"golang.org/x/sync/errgroup"
+	"gorm.io/gorm"
 )
 
 type AgentSkillsHandler struct {
@@ -60,6 +61,14 @@ func toASCII(s string) string {
 		}
 	}
 	return result.String()
+}
+
+// buildContentDisposition builds a Content-Disposition header value for a ZIP download.
+// It includes an ASCII fallback filename and a RFC 5987 UTF-8 encoded filename.
+func buildContentDisposition(name string) string {
+	asciiName := toASCII(name)
+	escapedName := url.PathEscape(name)
+	return fmt.Sprintf("attachment; filename=\"%s.zip\"; filename*=UTF-8''%s.zip", asciiName, escapedName)
 }
 
 type CreateAgentSkillsReq struct {
@@ -474,8 +483,12 @@ func (h *AgentSkillsHandler) DownloadZip(c *gin.Context) {
 	// Get skill metadata + file list
 	listResult, err := h.svc.ListFiles(c.Request.Context(), project.ID, id)
 	if err != nil {
-		// Issue 6: Don't leak internal error details
-		c.JSON(http.StatusNotFound, serializer.Err(http.StatusNotFound, "skill not found", nil))
+		// Distinguish "not found" from internal errors (fix: don't mask storage/DB failures as 404)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, serializer.Err(http.StatusNotFound, "skill not found", nil))
+		} else {
+			c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "failed to list skill files", nil))
+		}
 		return
 	}
 
@@ -505,10 +518,7 @@ func (h *AgentSkillsHandler) DownloadZip(c *gin.Context) {
 	if len(artifacts) == 0 {
 		// No files to download, return empty ZIP
 		c.Header("Content-Type", "application/zip")
-		// RFC 5987: Use QueryEscape (encodes /, @, :) + ASCII fallback
-		asciiName := toASCII(listResult.Name)
-		escapedName := url.QueryEscape(listResult.Name)
-		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"; filename*=UTF-8''%s.zip", asciiName, escapedName))
+		c.Header("Content-Disposition", buildContentDisposition(listResult.Name))
 		buf := new(bytes.Buffer)
 		zipWriter := zip.NewWriter(buf)
 		zipWriter.Close()
@@ -575,9 +585,6 @@ func (h *AgentSkillsHandler) DownloadZip(c *gin.Context) {
 
 	// Stream ZIP to client
 	c.Header("Content-Type", "application/zip")
-	// RFC 5987: Use QueryEscape (encodes /, @, :) + ASCII fallback
-	asciiName := toASCII(listResult.Name)
-	escapedName := url.QueryEscape(listResult.Name)
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.zip\"; filename*=UTF-8''%s.zip", asciiName, escapedName))
+	c.Header("Content-Disposition", buildContentDisposition(listResult.Name))
 	c.Data(http.StatusOK, "application/zip", buf.Bytes())
 }
