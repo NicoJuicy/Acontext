@@ -7,7 +7,7 @@ const corsHeaders = {
 
 const BANNER_CONFIG = {
   id: "chat-pro-trial-v1",
-  visible: true,
+  visible: false,
   start_at: "2025-01-01T00:00:00Z",
   end_at: "2026-12-31T23:59:59Z",
   icon: "party",

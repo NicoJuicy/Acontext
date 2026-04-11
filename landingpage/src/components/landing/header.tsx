@@ -6,10 +6,8 @@ import { usePathname } from 'next/navigation'
 import {
   Github,
   ArrowRight,
-  ArrowUpRight,
   FileText,
   BookOpen,
-  MessageCircle,
   MessageSquare,
   Package,
   LayoutDashboard,
@@ -222,8 +220,8 @@ export function Header() {
                 {/* Product Dropdown */}
                 <div
                   className={`absolute left-1/2 -translate-x-1/2 top-full pt-2 transition-all duration-200 ${showProductDropdown
-                      ? 'opacity-100 visible translate-y-0'
-                      : 'opacity-0 invisible -translate-y-1'
+                    ? 'opacity-100 visible translate-y-0'
+                    : 'opacity-0 invisible -translate-y-1'
                     }`}
                 >
                   <div className="w-[280px] bg-popover border border-border rounded-lg shadow-xl overflow-hidden">
@@ -360,8 +358,8 @@ export function Header() {
                 {/* Docs Dropdown */}
                 <div
                   className={`absolute left-1/2 -translate-x-1/2 top-full pt-2 transition-all duration-200 ${showDocsDropdown
-                      ? 'opacity-100 visible translate-y-0'
-                      : 'opacity-0 invisible -translate-y-1'
+                    ? 'opacity-100 visible translate-y-0'
+                    : 'opacity-0 invisible -translate-y-1'
                     }`}
                 >
                   <div className="w-[480px] bg-popover border border-border rounded-lg shadow-xl overflow-hidden">
@@ -627,8 +625,8 @@ export function Header() {
                 {/* Blog Dropdown */}
                 <div
                   className={`absolute left-1/2 -translate-x-1/2 top-full pt-2 transition-all duration-200 ${showBlogDropdown
-                      ? 'opacity-100 visible translate-y-0'
-                      : 'opacity-0 invisible -translate-y-1'
+                    ? 'opacity-100 visible translate-y-0'
+                    : 'opacity-0 invisible -translate-y-1'
                     }`}
                 >
                   <div className="w-96 bg-popover border border-border rounded-lg shadow-xl overflow-hidden">
@@ -705,17 +703,6 @@ export function Header() {
 
           {/* Right side buttons */}
           <div className="flex items-center gap-2 lg:gap-3">
-            <a
-              href="https://cal.com/acontext/30min"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-0.5 text-sm font-medium text-muted-foreground relative transition-all duration-200 hover:text-foreground after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-px after:bg-foreground after:transition-all after:duration-200 hover:after:w-full"
-              aria-label="Talk to Founder (opens in new tab)"
-            >
-              <span className="hidden lg:inline">Talk to Founder</span>
-              <MessageCircle className="h-4 w-4 shrink-0 lg:hidden" aria-hidden />
-              <ArrowUpRight className="h-4 w-4 shrink-0 hidden lg:block" aria-hidden />
-            </a>
             <ThemeToggle />
             <Button variant="ghost" size="sm" asChild className="gap-1.5 px-2.5">
               <a
@@ -774,8 +761,8 @@ export function Header() {
       <div
         ref={mobileMenuRef}
         className={`fixed left-0 top-16 flex h-[calc(100vh-4rem)] w-full origin-top bg-background text-foreground md:hidden z-100 transition-all duration-300 ease-in-out ${showMobileMenu
-            ? 'opacity-100 scale-y-100 translate-y-0'
-            : 'opacity-0 scale-y-95 -translate-y-4 pointer-events-none'
+          ? 'opacity-100 scale-y-100 translate-y-0'
+          : 'opacity-0 scale-y-95 -translate-y-4 pointer-events-none'
           }`}
       >
         <div className="flex h-full max-h-full w-full flex-col px-3">
