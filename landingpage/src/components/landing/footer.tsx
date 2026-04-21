@@ -4,7 +4,6 @@ import { Logo } from './logo'
 const footerLinks = {
   resources: [
     { name: 'Product', href: '/product' },
-    { name: 'Pricing', href: '/pricing' },
     { name: 'Blog', href: '/blog' },
     { name: 'Docs', href: 'https://docs.acontext.io' },
     { name: 'API Reference', href: 'https://docs.acontext.io/api-reference/introduction' },

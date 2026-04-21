@@ -10,7 +10,6 @@ import {
   deleteOrganization as deleteOrg,
   getOrganizationProjects,
 } from "@/lib/supabase";
-import { deleteCustomer } from "@/lib/supabase/operations/prices";
 import { AcontextClient } from "@/lib/acontext/server";
 
 export async function updateOrganizationName(orgId: string, name: string) {
@@ -114,21 +113,7 @@ export async function deleteOrganization(orgId: string) {
     }
   }
 
-  // Delete Stripe customer and cancel subscriptions before deleting organization
-  try {
-    const deleteCustomerResult = await deleteCustomer(orgId);
-    if (!deleteCustomerResult.success && deleteCustomerResult.error) {
-      console.error("Failed to delete Stripe customer:", deleteCustomerResult.error);
-      // Continue with organization deletion even if Stripe cleanup fails
-      // The customer/subscription can be manually cleaned up later
-    }
-  } catch (error) {
-    console.error("Error deleting Stripe customer:", error);
-    // Continue with organization deletion
-  }
-
   // Delete organization - CASCADE will automatically delete related records:
-  // - organization_billing
   // - organization_members
   // - organization_projects (database records only)
   const { error: orgError } = await deleteOrg(orgId);

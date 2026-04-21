@@ -15,17 +15,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 import { createOrganization } from "@/app/new/actions";
 import { useTopNavStore } from "@/stores/top-nav";
-import { usePlanStore } from "@/stores/plan";
 import { MAX_ORG_NAME_LENGTH } from "@/lib/utils";
 
 function SubmitButton({
@@ -56,15 +48,9 @@ function NewOrganizationContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
   const { initialize } = useTopNavStore();
-  const { getAllPricesWithFree, isLoading, formatPrice, getPlanDisplayName } =
-    usePlanStore();
-  const prices = getAllPricesWithFree();
-  // Default to "free" plan - this is always available in the prices list
-  const [selectedPlan, setSelectedPlan] = useState<string>("free");
   const [name, setName] = useState<string>("");
 
   useEffect(() => {
-    // Initialize top-nav state when page loads
     initialize({
       title: "New organization",
       organization: null,
@@ -82,7 +68,7 @@ function NewOrganizationContent() {
           <CardTitle>Create a new organization</CardTitle>
           <CardDescription>
             Organizations are a way to group your projects. Each organization
-            can be configured with different team members and billing settings.
+            can be configured with different team members.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -92,6 +78,7 @@ function NewOrganizationContent() {
             </Alert>
           )}
           <form action={createOrganization}>
+            <input type="hidden" name="plan" value="free" />
             <div className="grid gap-6">
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
@@ -110,33 +97,6 @@ function NewOrganizationContent() {
                   onChange={(e) => setName(e.target.value)}
                   required
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="plan">Plan</Label>
-                <input type="hidden" name="plan" value={selectedPlan} />
-                <Select
-                  value={selectedPlan}
-                  onValueChange={setSelectedPlan}
-                  disabled={isLoading}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a plan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {prices.map((price) => (
-                      <SelectItem key={price.id} value={price.product}>
-                        <div className="flex items-center justify-between w-full gap-1">
-                          <span>{getPlanDisplayName(price)}</span>
-                          {"-"}
-                          <span className="text-muted-foreground text-sm">
-                            {formatPrice(price.unit_amount, price.currency)}
-                            {price.recurring && `/${price.recurring.interval}`}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
               <SubmitButton
                 label="Create Organization"

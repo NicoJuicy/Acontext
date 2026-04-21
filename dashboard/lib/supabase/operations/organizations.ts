@@ -2,7 +2,16 @@
 
 import { createClient, createAdminClient } from "../server";
 import { getCurrentUser } from "./auth";
-import { PlanDescription, normalizePlan, PlanType } from "@/stores/plan";
+function normalizePlan(plan?: string | null): string {
+  return (plan || "free").toLowerCase();
+}
+
+interface PlanDescription {
+  plan_desc?: string;
+  pkg_title?: string;
+  pkg?: string[];
+  original_amount?: number;
+}
 import { Organization, Project } from "@/types";
 import { getOrganizationProjects } from "./projects";
 
@@ -533,7 +542,7 @@ export async function getOrganizationDataWithPlan(
   }
 ): Promise<{
   currentOrganization: Organization;
-  allOrganizations: Array<{ id: string; name: string; plan: PlanType }>;
+  allOrganizations: Array<{ id: string; name: string; plan: string }>;
   projects?: Project[];
 }> {
   // Get current user (will redirect if not authenticated)
@@ -602,13 +611,13 @@ export async function getOrganizationDataWithPlan(
       };
     })
     .filter(
-      (org): org is { id: string; name: string; plan: PlanType } =>
+      (org): org is { id: string; name: string; plan: string } =>
         org !== null
     );
 
   const result: {
     currentOrganization: Organization;
-    allOrganizations: Array<{ id: string; name: string; plan: PlanType }>;
+    allOrganizations: Array<{ id: string; name: string; plan: string }>;
     projects?: Project[];
   } = {
     currentOrganization,

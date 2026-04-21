@@ -1,10 +1,8 @@
-import { PlanType } from "@/stores/plan";
-
 export interface Organization {
   id: string
   name: string
-  plan?: PlanType
-  pending_plan?: PlanType  // Scheduled plan change (e.g., downgrade at period end)
+  plan?: string
+  pending_plan?: string
   is_default?: boolean
   role?: "owner" | "member"
 }
@@ -12,8 +10,8 @@ export interface Organization {
 export interface OrganizationWithPlan {
   id: string
   name: string
-  plan: PlanType
-  pending_plan?: PlanType  // Scheduled plan change (e.g., downgrade at period end)
+  plan: string
+  pending_plan?: string
   is_default: boolean
   created_at: string
   role: "owner" | "member"

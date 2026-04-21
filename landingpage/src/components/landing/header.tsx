@@ -15,7 +15,6 @@ import {
   Bot,
   Menu,
   X,
-  DollarSign,
   BarChart3,
   Brain,
   Box,
@@ -330,18 +329,6 @@ export function Header() {
                   </div>
                 </div>
               </div>
-              <Link
-                href="/pricing"
-                className={cn(
-                  'text-sm font-medium transition-colors',
-                  pathname === '/pricing'
-                    ? 'text-primary'
-                    : 'text-muted-foreground hover:text-primary',
-                )}
-                aria-label="Go to pricing page"
-              >
-                Pricing
-              </Link>
               <div
                 className="relative"
                 onMouseEnter={handleDocsMouseEnter}
@@ -867,26 +854,6 @@ export function Header() {
                   </div>
                 </div>
               </a>
-              <Link
-                href="/pricing"
-                onClick={handleMobileLinkClick}
-                className={cn(
-                  'group outline-none w-full',
-                  pathname === '/pricing' && 'text-primary',
-                )}
-                aria-label="Go to pricing page"
-              >
-                <div className="flex gap-x-1 text-center font-sans transition justify-center items-center shrink-0 select-none group-focus:outline-none group-disabled:opacity-75 group-disabled:pointer-events-none disabled:opacity-50 text-xs border-b border-border py-3 w-full">
-                  <div className="w-full transition">
-                    <span className="flex w-full items-center justify-between">
-                      <span className="flex items-center gap-x-0.5 text-base font-normal text-foreground">
-                        Pricing
-                      </span>
-                      <DollarSign className="size-5 opacity-50" />
-                    </span>
-                  </div>
-                </div>
-              </Link>
               <Link
                 href="https://docs.acontext.io"
                 target="_blank"

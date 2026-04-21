@@ -4,7 +4,7 @@ import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TopNav } from "@/components/top-nav";
 import { NProgressProvider } from "@/components/nprogress";
-import { getCurrentUserOptional, getPrices } from "@/lib/supabase";
+import { getCurrentUserOptional } from "@/lib/supabase";
 import { Toaster } from "@/components/ui/sonner";
 import { ContentWrapper } from "@/components/content-wrapper";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
@@ -47,10 +47,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [user, pricesResult] = await Promise.all([
-    getCurrentUserOptional(),
-    getPrices(),
-  ]);
+  const user = await getCurrentUserOptional();
 
   return (
     <html
@@ -96,11 +93,7 @@ export default async function RootLayout({
             <div className="flex flex-col h-screen w-screen relative">
               {/* TopNav is fixed positioned, so it doesn't need to be in flex container */}
               {user && (
-                <TopNav
-                  user={user}
-                  prices={pricesResult.prices}
-                  products={pricesResult.products}
-                />
+                <TopNav user={user} />
               )}
               {/* Content area: add padding-top on mobile for fixed nav layers (56px + 48px = 104px) */}
               <ContentWrapper>{children}</ContentWrapper>

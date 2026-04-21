@@ -2,7 +2,7 @@
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar, NavItem } from "@/components/app-sidebar";
-import { BarChart3, FolderKanban, Receipt, Settings, Users } from "lucide-react";
+import { BarChart3, FolderKanban, Settings, Users } from "lucide-react";
 import { encodeId } from "@/lib/id-codec";
 
 interface OrgLayoutClientProps {
@@ -33,12 +33,6 @@ export function OrgLayoutClient({
       title: "Usage",
       icon: BarChart3,
       href: `/org/${organizationId}/usage`,
-      exactMatch: false,
-    },
-    {
-      title: "Billing",
-      icon: Receipt,
-      href: `/org/${organizationId}/billing`,
       exactMatch: false,
     },
     {

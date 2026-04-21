@@ -12,13 +12,12 @@ import {
   Plus,
   BookOpen,
   Github,
-  Receipt,
+  BarChart3,
   ExternalLink,
   ShieldCheck,
   ShieldX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,7 +50,6 @@ import { logout } from "@/app/auth/login/actions";
 import { Organization, Project } from "@/types";
 import { useUserStore } from "@/stores/user";
 import { useTopNavStore } from "@/stores/top-nav";
-import { usePlanStore, Price, Product, getPlanTypeDisplayName, isPaidPlan } from "@/stores/plan";
 import { User } from "@supabase/supabase-js";
 import { cn, formatBytes } from "@/lib/utils";
 import { encodeId } from "@/lib/id-codec";
@@ -94,8 +92,6 @@ interface ProjectSelectorProps {
 
 interface TopNavProps {
   user: User;
-  prices?: Price[];
-  products?: Product[];
 }
 
 // Organization Selector Component
@@ -123,14 +119,6 @@ function OrganizationSelector({
           <span className="max-w-[100px] sm:max-w-[150px] md:max-w-[200px] truncate hidden sm:block text-sm">
             {currentOrganization.name}
           </span>
-          {isPaidPlan(currentOrganization.plan) && (
-            <Badge
-              variant="outline"
-              className="text-[9px] leading-none px-[5.5px] py-[3px] uppercase tracking-[0.07em] font-medium shrink-0 hidden sm:inline-flex"
-            >
-              {getPlanTypeDisplayName(currentOrganization.plan || "free")}
-            </Badge>
-          )}
         </Link>
       ) : (
         <>
@@ -167,14 +155,6 @@ function OrganizationSelector({
                       >
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                           <span className="truncate">{org.name}</span>
-                          {isPaidPlan(org.plan) && (
-                            <Badge
-                              variant="outline"
-                              className="text-[9px] leading-none px-1 py-0.5 uppercase tracking-[0.07em] font-medium shrink-0"
-                            >
-                              {getPlanTypeDisplayName(org.plan || "free")}
-                            </Badge>
-                          )}
                         </div>
                         {currentOrganization?.id === org.id && (
                           <Check className="h-4 w-4" />
@@ -349,11 +329,8 @@ function UsageIndicator({ className }: { className?: string }) {
     };
   }, [fetched, user]);
 
-  // Check if any FREE plan org has critical usage (>=90%)
-  // Paid plans use pay-per-use overage, so no warning needed
   const hasWarning = React.useMemo(() => {
     return usageData.some((org) => {
-      if (org.plan !== "free") return false;
       const metrics = [
         { current: org.usage.current_task, max: org.limits.max_task },
         { current: org.usage.current_storage, max: org.limits.max_storage },
@@ -364,9 +341,7 @@ function UsageIndicator({ className }: { className?: string }) {
     });
   }, [usageData]);
 
-  const getBarColor = (percentage: number, plan: string) => {
-    // Paid plans use pay-per-use overage — no alarming colors needed
-    if (plan !== "free") return "bg-primary";
+  const getBarColor = (percentage: number) => {
     if (percentage >= 90) return "bg-red-500";
     if (percentage >= 70) return "bg-amber-500";
     return "bg-primary";
@@ -380,7 +355,7 @@ function UsageIndicator({ className }: { className?: string }) {
           size="icon"
           className={cn("rounded-full h-8 w-8 relative border border-border", className)}
         >
-          <Receipt className="h-4 w-4" />
+          <BarChart3 className="h-4 w-4" />
           {hasWarning && (
             <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-background" />
           )}
@@ -415,24 +390,13 @@ function UsageIndicator({ className }: { className?: string }) {
                   : 0;
               const maxPct = Math.max(taskPct, storagePct);
               const encodedId = encodeId(org.orgId);
-              // For paid plans, check if any metric exceeds included quota
-              const hasOverage =
-                org.plan !== "free" &&
-                ((org.limits.max_task > 0 &&
-                  org.usage.current_task > org.limits.max_task) ||
-                  (org.limits.max_storage > 0 &&
-                    org.usage.current_storage > org.limits.max_storage));
 
               return (
                 <button
                   key={org.orgId}
                   className="w-full px-3 py-2.5 text-left hover:bg-muted/50 transition-colors border-b last:border-b-0 cursor-pointer"
                   onClick={() => {
-                    router.push(
-                      hasOverage
-                        ? `/org/${encodedId}/usage`
-                        : `/org/${encodedId}/billing`
-                    );
+                    router.push(`/org/${encodedId}/usage`);
                   }}
                 >
                   <div className="flex items-center justify-between mb-1.5">
@@ -440,7 +404,7 @@ function UsageIndicator({ className }: { className?: string }) {
                       <span className="text-sm font-medium truncate">
                         {org.orgName}
                       </span>
-                      {org.plan === "free" && maxPct >= 90 && (
+                      {maxPct >= 90 && (
                         <span className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
                       )}
                     </div>
@@ -459,7 +423,7 @@ function UsageIndicator({ className }: { className?: string }) {
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div
-                        className={`h-full rounded-full transition-all ${getBarColor(taskPct, org.plan)}`}
+                        className={`h-full rounded-full transition-all ${getBarColor(taskPct)}`}
                         style={{ width: `${taskPct}%` }}
                       />
                     </div>
@@ -477,18 +441,11 @@ function UsageIndicator({ className }: { className?: string }) {
                     </div>
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                       <div
-                        className={`h-full rounded-full transition-all ${getBarColor(storagePct, org.plan)}`}
+                        className={`h-full rounded-full transition-all ${getBarColor(storagePct)}`}
                         style={{ width: `${storagePct}%` }}
                       />
                     </div>
                   </div>
-                  {/* Overage hint for paid plans */}
-                  {hasOverage && (
-                    <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-                      <span>Overage detected — view details</span>
-                      <ExternalLink className="h-2.5 w-2.5" />
-                    </div>
-                  )}
                 </button>
               );
             })
@@ -499,24 +456,15 @@ function UsageIndicator({ className }: { className?: string }) {
   );
 }
 
-export function TopNav({ user, prices = [], products = [] }: TopNavProps) {
-  // Get data from stores
+export function TopNav({ user }: TopNavProps) {
   const { setUser } = useUserStore();
   const { title, organization, project, organizations, projects, hasSidebar } =
     useTopNavStore();
-  const { setPrices, setProducts } = usePlanStore();
   const pathname = usePathname();
 
-  // Sync user to store when it changes
   React.useEffect(() => {
     setUser(user);
   }, [user, setUser]);
-
-  // Sync prices to plan store when it changes
-  React.useEffect(() => {
-    setPrices(prices);
-    setProducts(products);
-  }, [prices, products, setPrices, setProducts]);
 
   // Determine visibility flags for selectors
   const shouldShowProject = project !== null;

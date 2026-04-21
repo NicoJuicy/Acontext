@@ -15,7 +15,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { OrganizationWithPlan } from "@/types";
-import { getPlanTypeDisplayName, isPaidPlan } from "@/stores/plan";
 
 interface OrganizationsListProps {
   organizations: OrganizationWithPlan[];
@@ -112,11 +111,8 @@ export function OrganizationsList({ organizations }: OrganizationsListProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                      <Badge
-                        variant={isPaidPlan(org.plan) ? "default" : "outline"}
-                        className="text-xs"
-                      >
-                        {getPlanTypeDisplayName(org.plan)}
+                      <Badge variant="outline" className="text-xs">
+                        Free
                       </Badge>
                       <Badge variant="outline" className="text-xs">
                         {org.role === "owner" ? "Owner" : "Member"}

@@ -1,5 +1,4 @@
 import { OrganizationsPageClient } from "./organizations-page-client";
-import { normalizePlan } from "@/stores/plan";
 import {
   getCurrentUser,
   getOrganizationMembershipsForCurrentUser,
@@ -65,8 +64,7 @@ async function getOrganizations(): Promise<OrganizationWithPlan[]> {
       const projects = orgObj.organization_projects;
       const projectCount = Array.isArray(projects) ? projects.length : 0;
 
-      // Normalize plan using helper function
-      const plan = normalizePlan(billing?.plan);
+      const plan = (billing?.plan || "free").toLowerCase();
 
       return {
         id: orgObj.id,

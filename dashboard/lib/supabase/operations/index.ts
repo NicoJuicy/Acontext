@@ -61,9 +61,6 @@ export {
   type SecretKeyRotation,
 } from "./projects";
 
-// Price operations
-export { getPrices, type GetPricesResult, type Product, type PlanDescription, type Price } from "./prices";
-
 // Alert banner operations
 export { getAlertBanner, type AlertBannerData } from "./alert-banner";
 
